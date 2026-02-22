@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Inventario Pro</title>
+    <script src="https://cdn.jsdelivr.net"></script>
+    <script src="https://unpkg.com"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ddd; }
+        button { background: #3ecf8e; color: white; border: none; cursor: pointer; font-weight: bold; }
+        #reader { width: 100%; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Unidad Productiva - Panel Real</h1>
+    
+    <div class="card">
+        <h3>🛒 Registrar Salida / Venta</h3>
+        <div id="reader"></div> <!-- Aquí se abre la cámara en Android -->
+        <input type="text" id="ean" placeholder="Código de Barras (Escaneado)">
+        <input type="number" id="cantidad" placeholder="Cantidad" value="1">
+        <button onclick="registrarSalida()">Confirmar Venta</button>
+    </div>
+
+    <div class="card">
+        <h3>📦 Stock Actual (Vista Global)</h3>
+        <div id="lista-productos">Cargando inventario...</div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN DE CONEXIÓN
+        const supabase = supabase.createClient('https://tzseklsayxaldtqatwuq.supabase.co', 'sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5');
+
+        // Función para vender y restar stock
+        async function registrarSalida() {
+            const ean = document.getElementById('ean').value;
+            const cant = document.getElementById('cantidad').value;
+
+            const { data, error } = await supabase
+                .from('salidas')
+                .insert([{ referencia_ean: ean, cantidad_vendida: cant, tipo_venta: 'MOSTRADOR' }]);
+
+            if (error) alert("Error: " + error.message);
+            else alert("¡Venta registrada y stock actualizado!");
+            cargarStock();
+        }
+
+        // Cargar stock en tiempo real
+        async function cargarStock() {
+            const { data } = await supabase.from('productos').select('*');
+            let html = "<table><tr><th>Producto</th><th>Stock</th></tr>";
+            data.forEach(p => {
+                html += `<tr><td>${p.nombre_producto}</td><td><b>${p.stock_actual}</b></td></tr>`;
+            });
+            document.getElementById('lista-productos').innerHTML = html + "</table>";
+        }
+
+        // Activar cámara en Android
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
+            (decodedText) => { document.getElementById('ean').value = decodedText; });
+
+        cargarStock();
+    </script>
+</body>
+</html>
