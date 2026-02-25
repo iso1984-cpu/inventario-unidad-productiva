@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ERP Guerrero - POS Final</title>
 
-    <!-- 1. LIBRERÍA SUPABASE (ENLACE CORREGIDO PARA VERCEL) -->
+    <!-- 1. LIBRERÍA SUPABASE (VERSIÓN UMD ESTABLE PARA VERCEL) -->
     <script src="https://cdn.jsdelivr.net"></script>
 
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
@@ -25,7 +25,7 @@
         <h4 class="mb-4 fw-bold text-danger">TIENDA GUERRERO</h4>
         <input type="email" id="log_user" class="form-control mb-2" placeholder="Correo corporativo">
         <input type="password" id="log_pass" class="form-control mb-3" placeholder="Contraseña">
-        <button class="btn btn-danger w-100 fw-bold" onclick="login()">INGRESAR</button>
+        <button class="btn btn-danger w-100 fw-bold" onclick="login()">INGRESAR AL SISTEMA</button>
     </div>
 </div>
 
@@ -38,25 +38,26 @@
     <main>
         <div class="card p-4 text-center">
             <h1 class="text-success fw-bold">SISTEMA CONECTADO ✅</h1>
-            <p>Conexión exitosa a Supabase. Listo para operar con <strong>Precio 1</strong>.</p>
+            <p>Conexión exitosa a tu base de datos <strong>tzseklsay...</strong></p>
+            <p>Listo para operar con <strong>Precio 1</strong>.</p>
         </div>
     </main>
 </div>
 
 <!-- 2. CONFIGURACIÓN DE SUPABASE ENCABEZANDO EL SCRIPT -->
 <script>
-    // CREDENCIALES DE TUS CAPTURAS (TZSEKLSAYXALDTQATWUQ)
+    // CREDENCIALES EXTRAÍDAS DE TU PROYECTO (tzseklsayxaldtqatwuq)
     const SURL = "https://tzseklsayxaldtqatwuq.supabase.co"; 
     const SKEY = "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5";
 
-    // INICIALIZACIÓN GLOBAL INMEDIATA
+    // INICIALIZACIÓN GLOBAL PRIORITARIA
     let supabase;
     try {
-        // En la versión UMD, el objeto se accede mediante window.supabase
+        // En la versión UMD cargada arriba, el objeto está en window.supabase
         supabase = window.supabase.createClient(SURL, SKEY);
-        console.log("✅ Conexión con Supabase establecida al inicio.");
+        console.log("✅ Supabase inicializado correctamente al inicio.");
     } catch (e) {
-        console.error("❌ Error al iniciar Supabase:", e.message);
+        console.error("❌ Error de inicialización:", e.message);
     }
 
     // FUNCIÓN DE LOGIN
@@ -65,7 +66,7 @@
         const pass = document.getElementById('log_pass').value;
 
         if (!supabase) {
-            alert("Error: La librería de conexión no ha cargado correctamente.");
+            alert("Error: No hay conexión con el servidor. Revisa tu internet.");
             return;
         }
 
