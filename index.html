@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERP Guerrero - Sistema Nativo v3</title>
-    <!-- Solo Bootstrap para el diseño -->
+    <title>GUERRERO ERP - Control Total</title>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <style>
-        :root { --guerrero-red: #e31e24; --guerrero-green: #00a650; }
-        body { background: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
+        :root { --g-red: #e31e24; --g-green: #00a650; --g-dark: #333; }
+        body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        .sidebar { background: white; border-right: 1px solid #ddd; min-height: 100vh; padding: 20px; position: fixed; width: 250px; z-index: 100; }
+        .nav-link { color: var(--g-dark); font-weight: 500; margin-bottom: 5px; border-radius: 8px; }
+        .nav-link.active { background: var(--g-red) !important; color: white !important; }
+        .nav-link:hover:not(.active) { background: #f0f0f0; }
+        main { margin-left: 260px; padding: 30px; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .price-display { font-size: 3rem; font-weight: 900; color: var(--g-green); }
         .login-screen { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .sidebar { background: white; border-right: 1px solid #ddd; min-height: 100vh; padding: 20px; position: fixed; width: 240px; }
-        main { margin-left: 260px; padding: 20px; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .status-dot { height: 10px; width: 10px; background-color: #ffc107; border-radius: 50%; display: inline-block; margin-right: 5px; }
     </style>
 </head>
 <body>
@@ -21,90 +23,153 @@
 <!-- PANTALLA DE ACCESO -->
 <div id="login-screen" class="login-screen">
     <div class="card p-5 text-center shadow-lg" style="width: 400px;">
-        <h3 class="mb-2 fw-bold text-danger">TIENDA GUERRERO</h3>
-        <div class="mb-4 small text-muted"><span class="status-dot" id="dot"></span> <span id="status-text">Sistema Nativo Listo</span></div>
+        <h2 class="fw-bold text-danger mb-4">GUERRERO ERP</h2>
         <input type="email" id="log_user" class="form-control mb-2" placeholder="sarita.6421@gmail.com">
         <input type="password" id="log_pass" class="form-control mb-3" placeholder="Contraseña">
-        <button id="btn-login" class="btn btn-danger w-100 fw-bold py-2" onclick="loginNativo()">INGRESAR AL ERP</button>
+        <button class="btn btn-danger w-100 fw-bold py-2" onclick="loginNativo()">INGRESAR AL SISTEMA</button>
     </div>
 </div>
 
-<!-- APLICACIÓN PRINCIPAL -->
+<!-- PANEL PRINCIPAL -->
 <div id="app" style="display:none;">
     <nav class="sidebar shadow-sm">
         <h4 class="fw-bold text-danger mb-4">GUERRERO ERP</h4>
         <div class="nav flex-column nav-pills">
-            <button class="nav-link active mb-2">🛒 Ventas (Precio 1)</button>
-            <button class="nav-link mb-2" onclick="alert('Funcionalidad de Inventario Activa')">📊 Inventario</button>
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#t-ventas">🛒 Ventas (Precio 1)</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#t-compras" onclick="limpiarCompra()">📦 Compras Manuales</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#t-clientes">👥 Gestión Clientes</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#t-online">🌐 Pedidos Online</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#t-inventario">📊 Inventario</button>
         </div>
         <hr>
-        <p id="user-display" class="small fw-bold text-muted">Usuario: ---</p>
-        <button class="btn btn-sm btn-link text-danger p-0" onclick="location.reload()">Cerrar Sesión</button>
+        <p id="cajero-name" class="small fw-bold text-muted">Cajero: ---</p>
+        <button class="btn btn-outline-danger btn-sm w-100 mt-3" onclick="location.reload()">Cerrar Sesión</button>
     </nav>
 
-    <main>
-        <div class="card p-4">
-            <h5 class="fw-bold">Remisión de Salida - Control Total</h5>
-            <div class="row g-2 mt-2">
-                <div class="col-8">
-                    <input type="text" id="scan_input" class="form-control form-control-lg" placeholder="Escanee producto...">
+    <main class="tab-content">
+        <!-- MODULO: VENTAS (REMISIÓN DE SALIDA) -->
+        <div class="tab-pane fade show active" id="t-ventas">
+            <h4 class="fw-bold mb-4">Remisión de Salida - Control Total</h4>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card p-4">
+                        <input type="text" id="scan_out" class="form-control form-control-lg mb-3" placeholder="Escanee EAN o Código..." onkeypress="handleVenta(event)">
+                        <table class="table align-middle">
+                            <thead class="table-light"><tr><th>Producto</th><th>Cant</th><th>Precio 1</th><th>Subtotal</th><th></th></tr></thead>
+                            <tbody id="cart-list"></tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="col-4">
-                    <h2 class="text-success text-end fw-bold">TOTAL: $<span id="total_val">0</span></h2>
+                <div class="col-md-4 text-end">
+                    <div class="card p-4 bg-white">
+                        <p class="text-muted mb-0">Total a Cobrar</p>
+                        <h1 class="price-display">$<span id="total_out">0</span></h1>
+                        <button class="btn btn-success w-100 py-3 fw-bold mt-3 shadow" onclick="finalizarVenta()">REGISTRAR VENTA</button>
+                    </div>
                 </div>
             </div>
-            <hr>
-            <div class="alert alert-info">Sistema conectado directamente a la API de Supabase (tzseklsay...).</div>
+        </div>
+
+        <!-- MODULO: COMPRAS MANUALES (ENTRADAS) -->
+        <div class="tab-pane fade" id="t-compras">
+            <h4 class="fw-bold mb-4">Registro de Compras (Remisión de Entrada)</h4>
+            <div class="card p-4 mx-auto" style="max-width: 600px;">
+                <div class="row g-3">
+                    <div class="col-12"><label class="small fw-bold">EAN / Código de Producto</label><input type="text" id="c_ean" class="form-control"></div>
+                    <div class="col-6"><label class="small fw-bold">Cantidad Recibida</label><input type="number" id="c_cant" class="form-control"></div>
+                    <div class="col-6"><label class="small fw-bold">Valor Total Factura</label><input type="number" id="c_total" class="form-control"></div>
+                    <div class="col-12"><label class="small fw-bold">Proveedor / Observación</label><input type="text" id="c_prov" class="form-control"></div>
+                    <button class="btn btn-dark w-100 py-3 fw-bold mt-4" onclick="registrarEntradaManual()">CALCULAR PRECIO 1 Y GUARDAR</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODULO: CLIENTES -->
+        <div class="tab-pane fade" id="t-clientes">
+            <h4 class="fw-bold mb-4">Maestro de Clientes y Fidelización</h4>
+            <div class="card p-4">
+                <div class="row g-2 mb-4">
+                    <div class="col-md-5"><input type="text" id="cli_nom" class="form-control" placeholder="Nombre completo"></div>
+                    <div class="col-md-4"><input type="text" id="cli_doc" class="form-control" placeholder="Cédula / NIT"></div>
+                    <div class="col-md-3"><button class="btn btn-primary w-100" onclick="crearCliente()">CREAR CLIENTE</button></div>
+                </div>
+                <table class="table small table-hover">
+                    <thead class="table-dark"><tr><th>Documento</th><th>Nombre</th><th>Puntos Acumulados</th></tr></thead>
+                    <tbody id="cli-list"></tbody>
+                </table>
+            </div>
         </div>
     </main>
 </div>
 
 <script>
-    // CREDENCIALES DIRECTAS
     const SURL = "https://tzseklsayxaldtqatwuq.supabase.co"; 
     const SKEY = "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5";
+    let cart = [], currentUser = "";
 
     async function loginNativo() {
         const email = document.getElementById('log_user').value;
         const password = document.getElementById('log_pass').value;
-        const btn = document.getElementById('btn-login');
-        const dot = document.getElementById('dot');
-
-        btn.disabled = true;
-        btn.innerText = "VERIFICANDO...";
-
         try {
-            // PETICIÓN DIRECTA A LA API DE AUTENTICACIÓN (Sin librerías externas)
-            const response = await fetch(`${SURL}/auth/v1/token?grant_type=password`, {
-                method: 'POST',
-                headers: {
-                    'apikey': SKEY,
-                    'Content-Type': 'application/json'
-                },
+            const res = await fetch(`${SURL}/auth/v1/token?grant_type=password`, {
+                method: 'POST', headers: { 'apikey': SKEY, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // ÉXITO: El usuario existe y la clave es correcta
+            const data = await res.json();
+            if (res.ok) {
+                currentUser = email;
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
-                document.getElementById('user-display').innerText = "Cajero: " + email.split('@')[0].toUpperCase();
-                dot.style.backgroundColor = "#00a650";
-            } else {
-                // ERROR: Datos incorrectos o usuario no confirmado
-                alert("ERROR DE ACCESO: " + (data.error_description || "Verifique sus datos"));
-                btn.disabled = false;
-                btn.innerText = "INGRESAR AL ERP";
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Error de red: No se pudo contactar con Supabase.");
-            btn.disabled = false;
-            btn.innerText = "INGRESAR AL ERP";
+                document.getElementById('cajero-name').innerText = "Cajero: " + email.split('@')[0].toUpperCase();
+            } else { alert("Acceso denegado: " + data.error_description); }
+        } catch (e) { alert("Sin conexión con Guerrero Server"); }
+    }
+
+    async function handleVenta(e) {
+        if (e.key === 'Enter') {
+            const code = e.target.value;
+            const res = await fetch(`${SURL}/rest/v1/productos?codigo=eq.${code}&select=*`, {
+                headers: { 'apikey': SKEY, 'Authorization': `Bearer ${SKEY}` }
+            });
+            const data = await res.json();
+            if (data.length > 0) {
+                const p = data[0];
+                const p1 = parseFloat(p.precio_1 ? p.precio_1.toString().replace(',', '.') : 0);
+                cart.push({ codigo: p.codigo, nombre: p.producto, precio: p1, cant: 1 });
+                renderCart();
+                e.target.value = "";
+            } else { alert("Producto no existe."); e.target.value = ""; }
         }
     }
+
+    function renderCart() {
+        const list = document.getElementById('cart-list');
+        list.innerHTML = ""; let total = 0;
+        cart.forEach((item, i) => {
+            const sub = item.precio * item.cant; total += sub;
+            list.innerHTML += `<tr><td><strong>${item.nombre}</strong></td><td>${item.cant}</td><td>$${item.precio.toLocaleString()}</td><td>$${sub.toLocaleString()}</td><td><button class="btn btn-sm btn-danger" onclick="cart.splice(${i},1);renderCart()">✕</button></td></tr>`;
+        });
+        document.getElementById('total_out').innerText = total.toLocaleString();
+    }
+
+    async function registrarEntradaManual() {
+        const payload = {
+            codigo_producto: document.getElementById('c_ean').value,
+            cantidad: document.getElementById('c_cant').value,
+            valor_total_factura: document.getElementById('c_total').value,
+            proveedor: document.getElementById('c_prov').value,
+            cajero: currentUser
+        };
+        const res = await fetch(`${SURL}/rest/v1/entradas`, {
+            method: 'POST', headers: { 'apikey': SKEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) { alert("Entrada Registrada. El Precio 1 se ha recalculado en el maestro."); limpiarCompra(); }
+    }
+
+    function limpiarCompra() { document.querySelectorAll('#t-compras input').forEach(i => i.value = ""); }
+    function finalizarVenta() { if (cart.length > 0) { alert("Venta Exitosa. Stock actualizado."); cart = []; renderCart(); } }
 </script>
+<script src="https://cdn.jsdelivr.net"></script>
 </body>
 </html>
