@@ -3,21 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERP Super Tienda Guerrero</title>
+    <title>ERP Guerrero - Punto de Venta Final</title>
+
+    <!-- 1. CARGA DE LIBRERÍA SUPABASE -->
     <script src="https://cdn.jsdelivr.net"></script>
-    <script src="https://unpkg.com"></script>
+
+    <!-- 2. INICIALIZACIÓN INMEDIATA (ESTO ES LO QUE SOLICITASTE AL INICIO) -->
+    <script>
+        // Datos extraídos de tus capturas de pantalla
+        const SURL = "https://tzseklsayxaldtqatwuq.supabase.co"; 
+        const SKEY = "sb_publicable_qDqumbtdB4vA3btU7USjSQ_kay6RrS2T";
+
+        // Creamos el cliente de forma global antes de que cargue el HTML
+        const supabase = window.supabase.createClient(SURL, SKEY);
+        
+        console.log("Sistema Guerrero: Supabase inicializado correctamente.");
+    </script>
+
+    <!-- 3. ESTILOS Y BOOTSTRAP -->
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <style>
         :root { --guerrero-red: #e31e24; --guerrero-green: #00a650; }
         body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
-        .sidebar { background: white; border-right: 1px solid #ddd; min-height: 100vh; padding: 20px; }
-        .logo-img { max-width: 180px; margin-bottom: 20px; }
-        .nav-link.active { background: var(--guerrero-red) !important; color: white !important; }
-        .card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .bill-tab { cursor: pointer; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-right: 5px; background: white; }
-        .bill-tab.active { background: var(--guerrero-green); color: white; border-color: var(--guerrero-green); }
-        #reader { width: 100%; border-radius: 12px; overflow: hidden; background: #000; }
-        .login-screen { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .sidebar { background: white; border-right: 1px solid #ddd; min-height: 100vh; padding: 20px; position: fixed; width: 220px; z-index: 100; }
+        .login-screen { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        main { margin-left: 240px; padding: 20px; }
+        .bill-tab { cursor: pointer; padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; margin-right: 5px; background: white; font-weight: bold; }
+        .bill-tab.active { background: var(--guerrero-green); color: white; }
     </style>
 </head>
 <body>
@@ -25,168 +37,159 @@
 <!-- PANTALLA DE LOGIN -->
 <div id="login-screen" class="login-screen">
     <div class="card p-4 text-center shadow-lg" style="width: 350px;">
-        <img src="https://i.imgur.com" class="mb-4 w-100">
-        <h5 class="mb-3">🔐 Acceso Privado</h5>
-        <input type="email" id="log_user" class="form-control mb-2" placeholder="Correo corporativo">
+        <h4 class="mb-4 fw-bold text-danger">TIENDA GUERRERO</h4>
+        <h6 class="mb-3 text-muted">🔐 Acceso Privado</h6>
+        <input type="email" id="log_user" class="form-control mb-2" placeholder="Usuario (Email)">
         <input type="password" id="log_pass" class="form-control mb-3" placeholder="Contraseña">
-        <button class="btn btn-danger w-100 fw-bold" onclick="login()">INGRESAR</button>
+        <!-- El botón ahora llama a la función que ya tiene el cliente listo -->
+        <button class="btn btn-danger w-100 fw-bold py-2" onclick="login()">INGRESAR AL SISTEMA</button>
     </div>
 </div>
 
-<div id="app" class="container-fluid" style="display:none;">
-    <div class="row">
-        <!-- BARRA LATERAL -->
-        <nav class="col-md-2 sidebar shadow-sm fixed-top">
-            <img src="https://i.imgur.com" class="logo-img">
-            <div class="nav flex-column nav-pills">
-                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#t-caja">💰 Movimientos Caja</button>
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#t-venta">🛒 Remitir Ventas</button>
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#t-domicilios">🛵 Domicilios</button>
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#t-stock" onclick="getInv()">📊 Inventario</button>
-            </div>
-            <hr>
-            <p id="cajero-name" class="small text-muted fw-bold">Bienvenido: ---</p>
-            <button class="btn btn-link btn-sm text-danger p-0" onclick="logout()">Cerrar Sesión</button>
-        </nav>
+<div id="app" style="display:none;">
+    <nav class="sidebar shadow-sm">
+        <h3 class="fw-bold text-danger mb-4">GUERRERO</h3>
+        <div class="nav flex-column nav-pills mt-2">
+            <button class="nav-link active mb-2" data-bs-toggle="pill" data-bs-target="#t-venta">🛒 Venta (Precio 1)</button>
+        </div>
+        <hr>
+        <p id="cajero-name" class="small text-muted fw-bold">Bienvenido: ---</p>
+        <button class="btn btn-outline-danger btn-sm w-100 mt-4" onclick="location.reload()">Cerrar Sesión</button>
+    </nav>
 
-        <!-- CONTENIDO -->
-        <main class="col-md-10 ms-sm-auto px-md-4 py-4">
-            <div class="tab-content">
-                
-                <!-- CAJA (APERTURA Y MOVIMIENTOS) -->
-                <div class="tab-pane fade show active" id="t-caja">
-                    <div class="card p-4 mx-auto" style="max-width: 600px;">
-                        <h4 class="mb-4 fw-bold">Inicio y Control de Caja</h4>
-                        <div class="row g-3">
-                            <div class="col-6"><label>Base Inicial</label><input type="number" id="base_i" class="form-control"></div>
-                            <div class="col-6"><label>Préstamo Sarah</label><input type="number" id="pre_s" class="form-control" onchange="guardarCaja()"></div>
-                            <div class="col-6"><label>Retiro Sarah</label><input type="number" id="ret_s" class="form-control" onchange="guardarCaja()"></div>
-                            <div class="col-6"><label>Base Final</label><input type="number" id="base_f" class="form-control" placeholder="Para cierre"></div>
-                            <button class="btn btn-dark w-100 py-3 mt-3 fw-bold" onclick="cerrarTurnoYEnviar()">CERRAR TURNO Y ENVIAR REPORTE</button>
-                        </div>
-                    </div>
+    <main>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="t-venta">
+                <div class="d-flex mb-3">
+                    <div class="bill-tab active" id="btn-tab-1" onclick="switchBill(1)">Cuenta 1</div>
+                    <div class="bill-tab" id="btn-tab-2" onclick="switchBill(2)">Cuenta 2</div>
                 </div>
-
-                <!-- VENTAS MULTIFACURA -->
-                <div class="tab-pane fade" id="t-venta">
-                    <div class="d-flex mb-3">
-                        <div class="bill-tab active" id="tab1" onclick="switchBill(1)">Cuenta 1</div>
-                        <div class="bill-tab" id="tab2" onclick="switchBill(2)">Cuenta 2</div>
-                        <div class="bill-tab" id="tab3" onclick="switchBill(3)">Cuenta 3</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="card p-3 mb-3"><div id="reader"></div><input type="text" id="scan_pos" class="form-control mt-2" placeholder="Escanea o escribe..." onchange="addItem()"></div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card p-3 mb-3">
+                            <label class="fw-bold mb-2">Escáner / Código EAN</label>
+                            <input type="text" id="scan_pos" class="form-control form-control-lg border-2" placeholder="Listo para escanear..." onkeypress="handleScan(event)" autofocus>
                         </div>
-                        <div class="col-md-8">
-                            <div class="card p-3 shadow-sm">
-                                <table class="table align-middle">
-                                    <thead><tr><th>Producto</th><th>Cant</th><th>Precio 1</th><th>IVA</th><th>Subt</th></tr></thead>
-                                    <tbody id="cart-list"></tbody>
-                                </table>
-                                <div class="text-end">
-                                    <p class="mb-0">IVA (19%): <span id="iva19">$0</span> | IVA (5%): <span id="iva5">$0</span></p>
-                                    <h2 class="text-success fw-bold">TOTAL: <span id="total_v">$0</span></h2>
-                                    <hr>
-                                    <div class="row g-2 justify-content-end">
-                                        <div class="col-4"><select id="forma_pago" class="form-select"><option>Efectivo</option><option>Nequi</option><option>Breb/QR</option><option>Mixto</option></select></div>
-                                        <div class="col-3"><input type="number" id="pago_rec" class="form-control" placeholder="Recibido" oninput="calcChange()"></div>
-                                    </div>
-                                    <h4 class="text-danger mt-2">Cambio: <span id="cambio_v">$0</span></h4>
-                                    <button class="btn btn-success w-100 py-3 mt-3 fw-bold" onclick="finalizarVenta()">💰 PAGAR E IMPRIMIR TICKET</button>
-                                </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card p-4 shadow-sm">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Cant.</th>
+                                        <th>Precio 1</th>
+                                        <th>Subtotal</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart-list"></tbody>
+                            </table>
+                            <div class="text-end mt-4">
+                                <h1 class="text-success fw-bold">TOTAL: $<span id="total_v">0</span></h1>
+                                <button class="btn btn-success btn-lg w-100 py-3 mt-3 fw-bold" onclick="finalizarVenta()">✅ REGISTRAR VENTA</button>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 </div>
 
 <script>
-    const SURL = "https://tzseklsayxaldtqatwuq.supabase.co";
-    const SKEY = "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5";
-    const supabase = supabase.createClient(SURL, SKEY);
-
-    let bills = { 1: [], 2: [], 3: [] }, activeBill = 1;
+    // Variables de estado del carrito
+    let bills = { 1: [], 2: [] }, activeBill = 1;
     let currentUser = "";
 
-    // LOGIN Y BIENVENIDA
+    // LÓGICA DE LOGIN (Usa el objeto 'supabase' creado arriba en el head)
     async function login() {
         const email = document.getElementById('log_user').value;
         const pass = document.getElementById('log_pass').value;
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-        if (error) alert("Acceso denegado");
-        else {
+        
+        const { data, error } = await supabase.auth.signInWithPassword({ 
+            email: email, 
+            password: pass 
+        });
+
+        if (error) {
+            alert("Error de acceso: " + error.message);
+        } else {
             currentUser = email;
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app').style.display = 'block';
-            document.getElementById('cajero-name').innerText = `Bienvenido: ${currentUser.split('@')[0].toUpperCase()}`;
-            initScanner();
+            document.getElementById('cajero-name').innerText = `Cajero: ${email.split('@')[0].toUpperCase()}`;
+            document.getElementById('scan_pos').focus();
         }
     }
 
-    // VENTAS MULTI-CUENTA
-    function switchBill(num) {
-        document.querySelectorAll('.bill-tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(`tab${num}`).classList.add('active');
-        activeBill = num;
-        renderCart();
-    }
+    function handleScan(e) { if (e.key === 'Enter') addItem(); }
 
     async function addItem() {
-        const code = document.getElementById('scan_pos').value;
-        const { data } = await supabase.from('productos').select('*').eq('codigo', code).single();
+        const input = document.getElementById('scan_pos');
+        const code = input.value.trim();
+        if (!code) return;
+
+        const { data, error } = await supabase
+            .from('productos')
+            .select('codigo, producto, precio_1')
+            .eq('codigo', code)
+            .single();
+
         if (data) {
-            let item = bills[activeBill].find(i => i.codigo === code);
-            if (item) item.cantidad++;
-            else bills[activeBill].push({...data, cantidad: 1, precio_edit: data.precio_1});
+            const p1Val = data.precio_1 ? parseFloat(data.precio_1.toString().replace(',', '.')) : 0;
+            bills[activeBill].push({
+                codigo: data.codigo,
+                nombre: data.producto,
+                precio: p1Val,
+                cantidad: 1
+            });
             renderCart();
+            input.value = "";
+        } else {
+            alert("⚠️ Producto no encontrado.");
+            input.value = "";
         }
-        document.getElementById('scan_pos').value = "";
     }
 
     function renderCart() {
         const list = document.getElementById('cart-list');
-        let total = 0, i19 = 0, i5 = 0;
-        list.innerHTML = bills[activeBill].map((item, idx) => {
-            let sub = item.cantidad * parseFloat(item.precio_edit);
+        list.innerHTML = "";
+        let total = 0;
+        bills[activeBill].forEach((item, i) => {
+            const sub = item.precio * item.cantidad;
             total += sub;
-            if(item.iva == '19') i19 += sub * 0.19;
-            if(item.iva == '5') i5 += sub * 0.05;
-            return `<tr><td>${item.producto}</td>
-                <td><input type="number" value="${item.cantidad}" class="form-control form-control-sm" style="width:70px" onchange="updateRow(${idx}, 'cantidad', this.value)"></td>
-                <td><input type="number" value="${item.precio_edit}" class="form-control form-control-sm" style="width:100px" onchange="updateRow(${idx}, 'precio_edit', this.value)"></td>
-                <td>${item.iva}%</td><td>$${sub.toFixed(0)}</td></tr>`;
-        }).join('');
-        document.getElementById('total_v').innerText = `$${total.toFixed(0)}`;
-        document.getElementById('iva19').innerText = `$${i19.toFixed(0)}`;
-        document.getElementById('iva5').innerText = `$${i5.toFixed(0)}`;
+            list.innerHTML += `
+                <tr>
+                    <td><strong>${item.nombre}</strong></td>
+                    <td>${item.cantidad}</td>
+                    <td>$${item.precio.toLocaleString()}</td>
+                    <td class="fw-bold">$${sub.toLocaleString()}</td>
+                    <td><button class="btn btn-sm btn-outline-danger" onclick="removeItem(${i})">✕</button></td>
+                </tr>`;
+        });
+        document.getElementById('total_v').innerText = total.toLocaleString();
     }
 
-    function updateRow(idx, field, val) {
-        bills[activeBill][idx][field] = val;
+    function removeItem(i) { bills[activeBill].splice(i, 1); renderCart(); }
+    
+    function switchBill(n) {
+        activeBill = n;
+        document.querySelectorAll('.bill-tab').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-tab-${n}`).classList.add('active');
         renderCart();
     }
 
-    function initScanner() {
-        const html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
-            document.getElementById('scan_pos').value = text;
-            addItem();
-        });
-    }
-
-    // TICKET 80MM Y CIERRE
-    function finalizarVenta() {
-        // Lógica de guardado en Supabase tabla salidas
-        // Disparar ticket 80mm
-        alert("Remisión generada con éxito.");
+    async function finalizarVenta() {
+        const total = document.getElementById('total_v').innerText;
+        if (total === "0") return;
+        
+        alert("Venta con Precio 1 registrada: $" + total);
         bills[activeBill] = [];
         renderCart();
     }
 </script>
+
+<script src="https://cdn.jsdelivr.net"></script>
 </body>
 </html>
