@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERP Guerrero - POS Final</title>
+    <title>ERP Guerrero - Punto de Venta Final</title>
 
-    <!-- 1. CARGA DE LIBRERÍA (CORREGIDA) -->
+    <!-- 1. CARGA DE LIBRERÍA SUPABASE (VERSIÓN ESTABLE) -->
     <script src="https://cdn.jsdelivr.net"></script>
 
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
@@ -37,34 +37,44 @@
     </nav>
     <main>
         <div class="card p-4">
-            <h1 class="text-success fw-bold">SISTEMA ACTIVO</h1>
-            <p>Conectado a Supabase con <strong>Precio 1</strong>.</p>
+            <h1 class="text-success fw-bold">SISTEMA CONECTADO</h1>
+            <p>Listo para operar con <strong>Precio 1</strong>.</p>
         </div>
     </main>
 </div>
 
 <!-- 2. CONFIGURACIÓN DE SUPABASE ENCABEZANDO EL SCRIPT -->
 <script>
-    // CREDENCIALES DE TUS CAPTURAS
+    // CREDENCIALES DE TU PANEL (EXTRAÍDAS DE TUS CAPTURAS)
     const SURL = "https://tzseklsayxaldtqatwuq.supabase.co"; 
     const SKEY = "sb_publicable_qDqumbtdB4vA3btU7USjSQ_kay6RrS2T";
 
-    // INICIALIZACIÓN (CORREGIDA PARA CDN)
-    const supabase = window.supabase.createClient(SURL, SKEY);
+    // INICIALIZACIÓN GLOBAL (CORREGIDA)
+    let supabase;
+    try {
+        supabase = window.supabase.createClient(SURL, SKEY);
+        console.log("✅ Supabase inicializado correctamente al inicio.");
+    } catch (e) {
+        console.error("❌ Error al iniciar Supabase:", e.message);
+    }
 
     // FUNCIÓN DE LOGIN
     async function login() {
         const email = document.getElementById('log_user').value;
         const pass = document.getElementById('log_pass').value;
 
-        // Ahora 'supabase' ya está definido globalmente arriba
+        if (!supabase) {
+            alert("Error: La conexión con Supabase no se ha establecido.");
+            return;
+        }
+
         const { data, error } = await supabase.auth.signInWithPassword({ 
             email: email, 
             password: pass 
         });
 
         if (error) {
-            alert("Error: " + error.message);
+            alert("Acceso denegado: " + error.message);
         } else {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app').style.display = 'block';
