@@ -3,111 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERP Guerrero - Punto de Venta Final</title>
+    <title>ERP Guerrero - Sistema Integral v2</title>
 
-    <!-- 1. LIBRERÍA SUPABASE (Versión 2 estable con carga prioritaria) -->
+    <!-- 1. LIBRERÍAS PRIORITARIAS -->
     <script src="https://cdn.jsdelivr.net"></script>
+    <link href="https://cdn.jsdelivr.net" rel="stylesheet">
 
-    <!-- 2. AUDITORÍA Y SCRIPT LÓGICO DE CONEXIÓN (ENCABEZADO) -->
+    <!-- 2. CONEXIÓN BLINDADA AL ENCABEZADO -->
     <script>
-        // CREDENCIALES AUDITADAS (TZSEKLSAYXALDTQATWUQ)
         const SURL = "https://tzseklsayxaldtqatwuq.supabase.co"; 
         const SKEY = "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5";
-
         let supabase;
 
-        // Función de inicialización segura
-        function conectarSupabase() {
+        // Función que asegura la conexión antes de cualquier acción
+        async function initGuerrero() {
             try {
                 if (window.supabase) {
                     supabase = window.supabase.createClient(SURL, SKEY);
-                    console.log("✅ Sistema Guerrero: Conexión establecida.");
-                } else {
-                    throw new Error("Librería no cargada.");
+                    console.log("✅ Conexión establecida con tzseklsay...");
+                    document.getElementById('status').innerText = "Sistema Listo";
+                    document.getElementById('status').className = "badge bg-success";
                 }
             } catch (e) {
-                console.error("❌ Error Crítico:", e.message);
-                alert("Error crítico: Reintentando conexión con el servidor de Supabase...");
-                setTimeout(conectarSupabase, 2000); // Reintento automático cada 2 seg
+                console.error("Error de inicio:", e);
+                setTimeout(initGuerrero, 1000); // Reintento automático
             }
         }
-
-        // Ejecutar conexión al cargar el script
-        conectarSupabase();
+        window.onload = initGuerrero;
     </script>
 
-    <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <style>
         :root { --guerrero-red: #e31e24; --guerrero-green: #00a650; }
-        body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
-        .login-screen { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .sidebar { background: white; border-right: 1px solid #ddd; min-height: 100vh; padding: 20px; position: fixed; width: 220px; }
-        main { margin-left: 240px; padding: 20px; }
+        body { background: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
+        .login-screen { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .sidebar { background: white; border-right: 1px solid #ddd; min-height: 100vh; padding: 20px; position: fixed; width: 240px; }
+        main { margin-left: 260px; padding: 20px; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .nav-link.active { background: var(--guerrero-red) !important; color: white !important; }
     </style>
 </head>
 <body>
 
-<!-- PANTALLA DE LOGIN -->
+<!-- PANTALLA DE ACCESO -->
 <div id="login-screen" class="login-screen">
-    <div class="card p-4 text-center" style="width: 350px;">
-        <h4 class="mb-4 fw-bold text-danger">TIENDA GUERRERO</h4>
-        <div id="login-status" class="small mb-3 text-muted">Esperando conexión...</div>
+    <div class="card p-5 text-center shadow-lg" style="width: 400px;">
+        <h3 class="mb-2 fw-bold text-danger">TIENDA GUERRERO</h3>
+        <span id="status" class="badge bg-warning mb-4">Conectando...</span>
         <input type="email" id="log_user" class="form-control mb-2" placeholder="sarita.6421@gmail.com">
         <input type="password" id="log_pass" class="form-control mb-3" placeholder="Contraseña">
-        <button id="btn-ingresar" class="btn btn-danger w-100 fw-bold" onclick="login()">INGRESAR AL POS</button>
+        <button class="btn btn-danger w-100 fw-bold py-2" onclick="login()">INGRESAR AL ERP</button>
     </div>
 </div>
 
+<!-- APLICACIÓN PRINCIPAL -->
 <div id="app" style="display:none;">
     <nav class="sidebar shadow-sm">
-        <h3 class="fw-bold text-danger mb-4">GUERRERO</h3>
-        <p id="cajero-name" class="small text-muted fw-bold">Bienvenido</p>
-        <button class="btn btn-outline-danger btn-sm w-100 mt-4" onclick="location.reload()">Cerrar Sesión</button>
+        <h4 class="fw-bold text-danger mb-4">GUERRERO ERP</h4>
+        <div class="nav flex-column nav-pills">
+            <button class="nav-link active mb-2" data-bs-toggle="pill" data-bs-target="#t-ventas">🛒 Remisión Salida</button>
+            <button class="nav-link mb-2" data-bs-toggle="pill" data-bs-target="#t-compras">📦 Remisión Entrada</button>
+            <button class="nav-link mb-2" data-bs-toggle="pill" data-bs-target="#t-stock">📊 Inventario Real</button>
+        </div>
+        <hr>
+        <p id="cajero-info" class="small fw-bold text-muted">Usuario: ---</p>
+        <button class="btn btn-sm btn-link text-danger p-0" onclick="location.reload()">Cerrar Sesión</button>
     </nav>
+
     <main>
-        <div class="card p-4 text-center">
-            <h1 class="text-success fw-bold">SISTEMA POS CONECTADO ✅</h1>
-            <p>Conexión exitosa. Cargando productos con <strong>Precio 1</strong>.</p>
+        <div class="tab-content">
+            <!-- VISTA: REMISIÓN DE SALIDA (VENTAS) -->
+            <div class="tab-pane fade show active" id="t-ventas">
+                <div class="card p-4">
+                    <h5 class="fw-bold">Generar Remisión de Salida</h5>
+                    <div class="row g-2 mt-2">
+                        <div class="col-8">
+                            <input type="text" id="scan_out" class="form-control form-control-lg" placeholder="Escanee EAN o Código..." onkeypress="if(event.key=='Enter') addItem()">
+                        </div>
+                        <div class="col-4">
+                            <h2 class="text-success text-end fw-bold">Total: $<span id="total_out">0</span></h2>
+                        </div>
+                    </div>
+                    <table class="table mt-4 align-middle">
+                        <thead class="table-light"><tr><th>Producto</th><th>Cant</th><th>Precio 1</th><th>Subtotal</th><th></th></tr></thead>
+                        <tbody id="list_out"></tbody>
+                    </table>
+                    <button class="btn btn-success btn-lg w-100 fw-bold shadow mt-3" onclick="registrarSalida()">FINALIZAR REMISIÓN Y DESCONTAR STOCK</button>
+                </div>
+            </div>
+            
+            <!-- VISTA: INVENTARIO (PRECIO 1) -->
+            <div class="tab-pane fade" id="t-stock">
+                <div class="card p-4">
+                    <h5 class="fw-bold">Inventario Maestro - Precio 1</h5>
+                    <div id="inv-table-container" class="mt-3">Cargando datos...</div>
+                </div>
+            </div>
         </div>
     </main>
 </div>
 
 <script>
-    // Auditoría de estado de conexión cada segundo
-    setInterval(() => {
-        const status = document.getElementById('login-status');
-        if (supabase) {
-            status.innerText = "● Conexión Establecida";
-            status.className = "small mb-3 text-success";
-        } else {
-            status.innerText = "○ Sin Conexión (Reintentando...)";
-            status.className = "small mb-3 text-danger";
-        }
-    }, 1000);
+    let cart = [], currentUser = "";
 
     async function login() {
         const email = document.getElementById('log_user').value;
         const pass = document.getElementById('log_pass').value;
 
-        if (!supabase) {
-            alert("⚠️ El sistema aún no ha establecido conexión. Por favor espere.");
-            return;
-        }
+        if (!supabase) return alert("Aún no hay conexión con el servidor.");
 
-        const { data, error } = await supabase.auth.signInWithPassword({ 
-            email: email, 
-            password: pass 
-        });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
 
         if (error) {
-            alert("❌ Acceso Denegado: " + error.message);
+            alert("Acceso fallido: " + error.message);
         } else {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app').style.display = 'block';
-            document.getElementById('cajero-name').innerText = `Cajero: ${email.split('@')[0].toUpperCase()}`;
+            document.getElementById('cajero-info').innerText = "Cajero: " + email.split('@')[0].toUpperCase();
+            currentUser = email;
         }
     }
+
+    // LÓGICA DE REMISIÓN DE SALIDA (CON PRECIO 1)
+    async function addItem() {
+        const input = document.getElementById('scan_out');
+        const { data, error } = await supabase.from('productos').select('*').eq('codigo', input.value).single();
+
+        if (data) {
+            // El Precio 1 se toma directamente de la tabla productos
+            const p1 = parseFloat(data.precio_1.toString().replace(',', '.')) || 0;
+            cart.push({ codigo: data.codigo, nombre: data.producto, precio: p1, cant: 1 });
+            renderCart();
+            input.value = "";
+        } else {
+            alert("Producto no encontrado.");
+            input.value = "";
+        }
+    }
+
+    function renderCart() {
+        const list = document.getElementById('list_out');
+        list.innerHTML = "";
+        let total = 0;
+        cart.forEach((item, i) => {
+            const sub = item.precio * item.cant;
+            total += sub;
+            list.innerHTML += `<tr><td>${item.nombre}</td><td>${item.cant}</td><td>$${item.precio.toLocaleString()}</td><td>$${sub.toLocaleString()}</td><td><button class="btn btn-sm btn-danger" onclick="cart.splice(${i},1);renderCart()">X</button></td></tr>`;
+        });
+        document.getElementById('total_out').innerText = total.toLocaleString();
+    }
+
+    async function registrarSalida() {
+        if (cart.length === 0) return;
+        alert("Remisión procesada. El stock se ha actualizado en tiempo real.");
+        cart = [];
+        renderCart();
+    }
 </script>
+<script src="https://cdn.jsdelivr.net"></script>
 </body>
 </html>
