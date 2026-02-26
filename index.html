@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUERRERO ERP v15 - Blindaje de Ingeniería</title>
+    <title>GUERRERO ERP v15 - Conexión Agresiva</title>
 
-    <!-- BOOTSTRAP PRIORITARIO -->
+    <!-- 1. CARGA FORZADA (ORDEN CRÍTICO) -->
+    <script src="https://cdn.jsdelivr.net"></script>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net">
 
     <style>
         :root { --g-red: #e31e24; --g-dark: #2c3e50; }
-        body { background-color: #f1f3f5; font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+        body { background: #f1f3f5; font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
         .login-card { background: white; padding: 45px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); width: 100%; max-width: 460px; text-align: center; }
-        .status-badge { font-size: 0.8rem; padding: 10px; border-radius: 10px; margin-bottom: 25px; font-weight: 700; transition: all 0.3s; }
+        .status-badge { font-size: 0.8rem; padding: 12px; border-radius: 10px; margin-bottom: 25px; font-weight: 700; border: 2px solid transparent; }
         #app { display: none; position: fixed; inset: 0; background: white; z-index: 10000; padding: 30px; }
-        .btn-g { padding: 14px; font-weight: 700; letter-spacing: 0.5px; border-radius: 12px; }
     </style>
 </head>
 <body>
@@ -23,8 +22,8 @@
 <div id="login-screen" class="login-card">
     <h3 class="fw-bold text-danger mb-4">GUERRERO ERP</h3>
     
-    <!-- Monitor de Sistema Blindado -->
-    <div id="status-bar" class="status-badge alert-secondary text-muted">
+    <!-- Semáforo de Conexión Agresiva -->
+    <div id="status-bar" class="status-badge alert-secondary text-muted border-secondary">
         <span class="spinner-border spinner-border-sm me-2"></span> INYECTANDO NÚCLEO...
     </div>
 
@@ -38,22 +37,22 @@
     <input type="email" id="log_user" class="form-control mb-2 py-2" placeholder="sarita.6421@gmail.com">
     <input type="password" id="log_pass" class="form-control mb-4 py-2" placeholder="••••••••">
     
-    <button id="btn-login" class="btn btn-danger w-100 btn-g shadow" onclick="GuerreroApp.login()" disabled>
+    <button id="btn-login" class="btn btn-danger w-100 py-3 fw-bold shadow" onclick="GuerreroApp.login()" disabled>
         CARGANDO SISTEMA...
     </button>
 </div>
 
 <div id="app">
-    <h2 class="text-danger fw-bold">PANEL DE CONTROL ACTIVO</h2>
-    <div class="alert alert-success">Sesión Auditorada en: <b id="caja-display"></b></div>
-    <button class="btn btn-dark" onclick="location.reload()">Finalizar Turno</button>
+    <h2 class="text-danger fw-bold">SISTEMA ACTIVO</h2>
+    <div class="alert alert-success">Sesión en: <b id="caja-display"></b></div>
 </div>
 
 <script>
 /**
- * GUERRERO CORE ENGINE - ARQUITECTURA RESILIENTE
+ * MOTOR DE CONEXIÓN AGRESIVA - GUERRERO V15
  */
 const GuerreroApp = (() => {
+    // 1. DEFINICIÓN DE CONSTANTES (Primero en orden)
     const CONFIG = {
         SURL: "https://tzseklsayxaldtqatwuq.supabase.co",
         SKEY: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5"
@@ -61,9 +60,10 @@ const GuerreroApp = (() => {
 
     let client = null;
 
-    // INYECCIÓN DINÁMICA DE SDK (Solución Radical)
-    const injectSDK = () => {
+    // 2. INYECTOR DINÁMICO DE RESPALDO
+    const forceSDK = () => {
         return new Promise((resolve) => {
+            if (window.supabase) return resolve(true);
             const script = document.createElement('script');
             script.src = "https://cdn.jsdelivr.net";
             script.onload = () => resolve(true);
@@ -72,33 +72,40 @@ const GuerreroApp = (() => {
         });
     };
 
-    const init = async () => {
+    // 3. ARRANQUE DEL MOTOR (Orden Crítico)
+    const startEngine = async () => {
         const bar = document.getElementById('status-bar');
         const btn = document.getElementById('btn-login');
 
-        // Intento 1: Inyectar
-        await injectSDK();
+        // Intento de inyección agresiva
+        await forceSDK();
 
-        // Verificación de existencia (Poll Pattern)
-        let ready = false;
-        for (let i = 0; i < 15; i++) {
-            if (window.supabase) { ready = true; break; }
+        // Bucle de comprobación de "Salud" (Poll Pattern)
+        let attempts = 0;
+        while (!window.supabase && attempts < 20) {
+            attempts++;
+            console.log(`[Engine] Reintento Agresivo ${attempts}...`);
             await new Promise(r => setTimeout(r, 400));
-            console.log(`[Engine] Sincronizando... Intento ${i+1}`);
         }
 
-        if (ready) {
-            client = window.supabase.createClient(CONFIG.SURL, CONFIG.SKEY);
-            bar.className = "status-badge alert-success text-success";
-            bar.innerHTML = "✅ NÚCLEO SINCRONIZADO Y SEGURO";
-            btn.disabled = false;
-            btn.innerText = "INICIAR TURNO 5H";
+        if (window.supabase) {
+            // Inicialización Global
+            try {
+                client = window.supabase.createClient(CONFIG.SURL, CONFIG.SKEY);
+                bar.className = "status-badge alert-success text-success border-success";
+                bar.innerHTML = "✅ NÚCLEO CONECTADO Y SEGURO";
+                btn.disabled = false;
+                btn.innerText = "INICIAR TURNO 5H";
+            } catch (err) {
+                bar.innerHTML = "❌ ERROR EN CLIENTE";
+            }
         } else {
-            bar.className = "status-badge alert-danger text-danger";
-            bar.innerHTML = "❌ ERROR: SDK BLOQUEADO POR EL NAVEGADOR";
+            bar.className = "status-badge alert-danger text-danger border-danger";
+            bar.innerHTML = "❌ ERROR: SDK BLOQUEADO (REVISAR INTERNET)";
         }
     };
 
+    // 4. LÓGICA DE AUDITORÍA Y ACCESO
     const login = async () => {
         const email = document.getElementById('log_user').value;
         const pass = document.getElementById('log_pass').value;
@@ -106,15 +113,15 @@ const GuerreroApp = (() => {
         const btn = document.getElementById('btn-login');
 
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>AUDITANDO ACCESO...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>AUDITANDO...';
 
         try {
             const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
             if (error) throw error;
 
-            // --- SISTEMA DE AUDITORÍA (Registro en Tabla 'auditoria_logins') ---
+            // REGISTRO DE AUDITORÍA
             await client.from('auditoria_logins').insert([
-                { cajero: email, caja: caja, fecha: new Date().toISOString(), accion: "INICIO_TURNO" }
+                { cajero: email, caja: caja, fecha: new Date().toISOString() }
             ]);
 
             document.getElementById('caja-display').innerText = caja;
@@ -122,13 +129,14 @@ const GuerreroApp = (() => {
             document.getElementById('app').style.display = 'block';
 
         } catch (e) {
-            alert("Error de Auditoría: " + e.message);
+            alert("Acceso Denegado: " + e.message);
             btn.disabled = false;
             btn.innerText = "INICIAR TURNO 5H";
         }
     };
 
-    window.onload = init;
+    // 5. DISPARADOR INMEDIATO
+    window.addEventListener('load', startEngine);
     return { login };
 })();
 </script>
