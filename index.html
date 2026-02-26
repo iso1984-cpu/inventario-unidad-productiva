@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUERRERO ERP v15 - Engineering Edition</title>
+    <title>GUERRERO ERP v15 - Conexión Blindada</title>
 
-    <!-- 1. CARGA ASÍNCRONA PERO CONTROLADA -->
+    <!-- 1. CARGA CRÍTICA (Prioridad Máxima) -->
     <script src="https://cdn.jsdelivr.net"></script>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net">
 
     <style>
         :root { --g-red: #e31e24; --g-dark: #2c3e50; }
-        body { background-color: #f1f3f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f1f3f5; font-family: 'Segoe UI', sans-serif; }
         .login-screen { position: fixed; inset: 0; background: #f1f3f5; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .is-loading { pointer-events: none; opacity: 0.6; filter: grayscale(1); }
+        .is-loading { pointer-events: none; opacity: 0.7; }
         #app { display: none; }
+        .status-badge { font-size: 0.8rem; font-weight: 600; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -24,8 +25,10 @@
     <div class="card shadow-lg p-5 text-center" style="width: 450px; border-radius: 20px;">
         <h3 class="fw-bold text-danger mb-4">GUERRERO ERP</h3>
         
-        <!-- Indicador de estado de ingeniería -->
-        <div id="status-bar" class="alert alert-info py-2 small">⚙️ Inicializando núcleo del sistema...</div>
+        <!-- Barra de Estado Dinámica -->
+        <div id="status-bar" class="alert alert-warning py-2 status-badge mb-4">
+            <span class="spinner-border spinner-border-sm me-2"></span> Sincronizando núcleo...
+        </div>
 
         <select id="select_caja" class="form-select mb-3">
             <optgroup label="Caja 1"><option value="Caja 1 Mañana">☀️ Caja 1 - Mañana</option><option value="Caja 1 Tarde">🌙 Caja 1 - Tarde</option></optgroup>
@@ -40,55 +43,62 @@
     </div>
 </div>
 
+<!-- Estructura de la APP (se muestra tras login) -->
 <div id="app">
-    <!-- Resto de tu interfaz de ventas/inventario aquí -->
+    <div class="p-4">
+        <h2 class="text-danger">Panel Guerrero ERP - Activo</h2>
+        <p>Turno: <span id="display-caja"></span></p>
+        <!-- Aquí va el resto de tu lógica de ventas/inventario -->
+    </div>
 </div>
 
 <script>
 /**
- * ARQUITECTURA DE MÓDULO SEGURO (ENCAPSULAMIENTO)
- * Previene colisiones de variables y errores de inicialización.
+ * GUERRERO ENGINE - SOLUCIÓN PERMANENTE
  */
 const GuerreroApp = (() => {
-    // Configuración privada
     const CONFIG = {
         SURL: "https://tzseklsayxaldtqatwuq.supabase.co",
         SKEY: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5"
     };
 
     let client = null;
-    let session = { user: null, caja: null, timer: 18000 };
 
-    // Método de arranque profesional
+    // Inicialización con Protección de SDK
     const init = async () => {
         const status = document.getElementById('status-bar');
         const btn = document.getElementById('btn-login');
         const screen = document.getElementById('login-screen');
 
         try {
-            // Espera activa a la librería (Retry Pattern)
-            let attempts = 0;
-            while (!window.supabase && attempts < 10) {
-                await new Promise(r => setTimeout(r, 500));
-                attempts++;
-            }
+            // Espera activa (Poll Pattern): Reintenta cada 300ms hasta que la librería exista
+            const waitForSDK = async () => {
+                let limit = 20; // 6 segundos de espera máxima
+                while (!window.supabase && limit > 0) {
+                    await new Promise(r => setTimeout(r, 300));
+                    limit--;
+                }
+                return !!window.supabase;
+            };
 
-            if (!window.supabase) throw new Error("SDK no disponible");
+            const sdkReady = await waitForSDK();
 
-            // Instanciación
+            if (!sdkReady) throw new Error("Tiempo de espera agotado: El SDK de Supabase no cargó.");
+
+            // Inicialización del cliente
             client = window.supabase.createClient(CONFIG.SURL, CONFIG.SKEY);
             
-            // Éxito: Desbloqueo de UI
-            status.className = "alert alert-success py-2 small";
-            status.innerText = "✅ Conexión establecida";
+            // UI Update: Éxito
+            status.className = "alert alert-success py-2 status-badge mb-4";
+            status.innerHTML = "✅ Sistema Listo para Ingreso";
             btn.disabled = false;
             btn.innerText = "INICIAR TURNO 5H";
             screen.classList.remove('is-loading');
 
         } catch (e) {
-            status.className = "alert alert-danger py-2 small";
-            status.innerText = "❌ Error crítico: Revise su conexión";
-            console.error("[Kernel] Error:", e);
+            status.className = "alert alert-danger py-2 status-badge mb-4";
+            status.innerHTML = "❌ Error Crítico: SDK no detectado";
+            console.error("[Kernel] Error Fatal:", e.message);
         }
     };
 
@@ -98,30 +108,28 @@ const GuerreroApp = (() => {
         const btn = document.getElementById('btn-login');
 
         btn.disabled = true;
-        btn.innerText = "AUTENTICANDO...";
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Validando...';
 
-        const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
+        try {
+            const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
 
-        if (error) {
-            alert("Error: " + error.message);
+            if (error) throw error;
+
+            // Éxito en Login
+            document.getElementById('display-caja').innerText = document.getElementById('select_caja').value;
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+
+        } catch (e) {
+            alert("Error de acceso: " + e.message);
             btn.disabled = false;
             btn.innerText = "INICIAR TURNO 5H";
-            return;
         }
-
-        // Transición a la App
-        session.user = data.user;
-        session.caja = document.getElementById('select_caja').value;
-        
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
-        console.log(`🚀 Sesión iniciada: ${session.caja}`);
     };
 
-    // Ejecutar inicialización al cargar
-    window.addEventListener('DOMContentLoaded', init);
+    // Lanzar motor al cargar el DOM
+    document.addEventListener('DOMContentLoaded', init);
 
-    // API Pública del módulo
     return { login };
 })();
 </script>
