@@ -11,7 +11,7 @@
 
     <style>
         :root { --g-red: #e31e24; --g-dark: #2c3e50; }
-        body { background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        body { background: #000; font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .login-card { background: #fff; padding: 40px; border-radius: 25px; width: 100%; max-width: 440px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         
         /* Barra de Progreso de Ingeniería */
@@ -27,7 +27,7 @@
 </head>
 <body>
 
-<div class="login-card">
+<div class="login-card shadow-lg">
     <h3 class="fw-bold text-danger text-center mb-4">GUERRERO ERP</h3>
     
     <div class="d-flex justify-content-between small text-muted mb-1">
@@ -40,7 +40,7 @@
 
     <!-- TERMINAL DE AUDITORÍA EN TIEMPO REAL -->
     <div id="audit-log" class="audit-terminal">
-        <span>[SYSTEM] Iniciando auditoría de red...</span>
+        <span>[SYSTEM] Iniciando auditoría de red móvil...</span>
     </div>
 
     <div id="access-ui">
@@ -84,11 +84,11 @@ const GuerreroEngine = (() => {
         log("Probando conectividad con Supabase...");
         updateUI(25, "Analizando RED...");
 
-        // Verificación de existencia del SDK
+        // Verificación de existencia del SDK (Poll Pattern)
         let retries = 0;
-        while (!window.supabase && retries < 10) {
+        while (!window.supabase && retries < 15) {
             log(`Reintento de detección SDK ${retries + 1}...`);
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 400));
             retries++;
         }
 
@@ -110,7 +110,7 @@ const GuerreroEngine = (() => {
         } else {
             updateUI(0, "Error de SDK");
             log("ERROR CRÍTICO: Red Bloqueada (DNS/Firewall).");
-            alert("Bloqueo Detectado. Use WiFi o cambie a un navegador sin extensiones (Modo Incógnito).");
+            alert("Bloqueo Detectado. Use WiFi o cambie a un navegador sin extensiones.");
         }
     };
 
@@ -124,19 +124,24 @@ const GuerreroEngine = (() => {
         btn.innerText = "VALIDANDO ACCESO...";
         log(`Validando credenciales para: ${email}`);
 
-        const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
+        try {
+            const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
 
-        if (error) {
-            log(`Acceso denegado: ${error.message}`);
-            alert("Error: " + error.message);
+            if (error) {
+                log(`Acceso denegado: ${error.message}`);
+                alert("Error: " + error.message);
+                btn.disabled = false;
+                btn.innerText = "REINTENTAR";
+            } else {
+                log("Acceso concedido. Registrando auditoría de turno...");
+                // Registro de auditoría
+                await client.from('auditoria_logins').insert([{ cajero: email, caja: caja, fecha: new Date().toISOString() }]);
+                log("Redirigiendo...");
+                // Aquí va la lógica para entrar a la aplicación
+            }
+        } catch (e) {
+            log("Error de conexión durante el login.");
             btn.disabled = false;
-            btn.innerText = "REINTENTAR";
-        } else {
-            log("Acceso concedido. Registrando auditoría de turno...");
-            // Auditoría automática en base de datos
-            await client.from('auditoria_logins').insert([{ cajero: email, caja: caja, fecha: new Date().toISOString() }]);
-            log("Redirigiendo...");
-            // Aquí pones la lógica para entrar a la app
         }
     };
 
@@ -146,4 +151,3 @@ const GuerreroEngine = (() => {
 </script>
 </body>
 </html>
-
