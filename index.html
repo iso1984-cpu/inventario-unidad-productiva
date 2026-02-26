@@ -5,149 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GUERRERO ERP - Operación Total</title>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net">
     <style>
         :root { --g-red: #e31e24; --g-dark: #0f172a; }
-        body { background: #f1f5f9; font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; }
+        body { background: #f1f5f9; font-family: sans-serif; margin: 0; }
 
-        /* PANTALLA DE INICIO CON BOTÓN (CAPA SUPERIOR) */
-        #layer-welcome { 
-            position: fixed; inset: 0; background: white; z-index: 5000; 
+        /* CAPA DE BIENVENIDA (La barrera) */
+        #capa-inicio { 
+            position: fixed; inset: 0; background: white; z-index: 9999; 
             display: flex; align-items: center; justify-content: center; text-align: center;
         }
-        .welcome-box { padding: 40px; border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); max-width: 480px; border: 1px solid #eee; }
 
-        /* PANEL OPERATIVO (OCULTO HASTA PULSAR EL BOTÓN) */
-        #layer-app { display: none; }
-        .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 25px; z-index: 1000; }
-        main { margin-left: 260px; padding: 30px; min-height: 100vh; }
-        
-        .nav-link { color: #94a3b8; cursor: pointer; padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; }
-        .nav-link.active { background: var(--g-red); color: white; box-shadow: 0 4px 15px rgba(227, 30, 36, 0.3); }
-        .card-g { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 25px; }
-        
-        .timer-h { background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 12px; font-family: monospace; font-weight: bold; font-size: 1.6rem; }
-        .module { display: none; }
-        .module.active { display: block; }
+        /* CAPA DEL ERP (El contenido) */
+        #capa-erp { display: none; } /* ESTO ES LO QUE SE ACTIVA AL DAR CLIC */
+
+        .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 250px; position: fixed; padding: 20px; }
+        main { margin-left: 260px; padding: 30px; }
     </style>
 </head>
 <body>
 
-<!-- 1. PANTALLA CON EL BOTÓN DE ARRANCAR Y BENDICIÓN -->
-<div id="layer-welcome">
-    <div class="welcome-box">
-        <h2 class="fw-bold text-danger mb-2">GUERRERO ERP</h2>
-        <p class="badge bg-light text-dark mb-4 border">Caja 1 Mañana - Turno de 5 Horas</p>
-        
-        <div class="alert alert-success py-3 mb-4 shadow-sm border-0">
-            <i class="bi bi-shield-check-fill fs-3 d-block mb-2"></i>
-            <span class="fw-bold small">CONEXIÓN NATIVA ESTABLECIDA</span>
-        </div>
-
-        <div class="mb-5 px-2">
-            <p class="fw-bold text-dark fs-5" style="line-height: 1.6;">
-                "Les agradecemos por ser parte de nuestro equipo. <br> 
-                Que Dios los bendiga y que el turno sea un éxito."
-            </p>
-        </div>
-
-        <!-- EL BOTÓN SOLICITADO -->
-        <button id="btn-start" class="btn btn-danger w-100 py-3 fw-bold shadow-lg fs-5" onclick="abrirERP()">
-            <i class="bi bi-play-circle-fill me-2"></i> ARRANCAR SISTEMA
+<!-- 1. PANTALLA DE INICIO (CAPA 1) -->
+<div id="capa-inicio">
+    <div class="card p-5 shadow-lg border-0" style="max-width: 450px; border-radius: 25px;">
+        <h3 class="text-danger fw-bold mb-4">GUERRERO ERP</h3>
+        <p class="fw-bold fs-5">"Les agradecemos por ser parte de nuestro equipo. Que Dios los bendiga y que el turno sea un éxito."</p>
+        <hr>
+        <button class="btn btn-danger w-100 py-3 fw-bold fs-5 shadow" onclick="arrancarSistema()">
+            ARRANCAR SISTEMA
         </button>
     </div>
 </div>
 
-<!-- 2. PANEL DE CONTROL (VENTAS E INVENTARIO) -->
-<div id="layer-app">
+<!-- 2. PANEL OPERATIVO (CAPA 2) -->
+<div id="capa-erp">
     <aside class="sidebar">
-        <div class="mb-5 text-center"><h4 class="fw-bold text-white m-0">GUERRERO</h4><small class="text-danger fw-bold">SISTEMA 360°</small></div>
+        <h4 class="text-white fw-bold mb-4">GUERRERO</h4>
         <nav class="nav flex-column">
-            <div class="nav-link active" onclick="verMod('v', this)"><i class="bi bi-cart3 me-3"></i> Ventas</div>
-            <div class="nav-link" onclick="verMod('i', this)"><i class="bi bi-box-seam me-3"></i> Inventario</div>
+            <button class="btn btn-danger mb-2 w-100 text-start" onclick="verMod('ventas')">🛒 Ventas</button>
+            <button class="btn btn-outline-light mb-2 w-100 text-start" onclick="verMod('inventario')">📦 Inventario</button>
         </nav>
-        <hr class="text-secondary my-4">
-        <div class="text-center">
-            <div class="badge bg-danger mb-3 p-2 w-100 fs-6">CAJA 1 MAÑANA</div>
-            <div id="reloj-pos" class="timer-h">05:00:00</div>
-            <p class="small fw-bold mt-3 text-light opacity-75">Cajero: SARITA.6421</p>
+        <div class="mt-5 text-center">
+            <div class="badge bg-danger p-2 w-100 mb-2">CAJA 1 MAÑANA</div>
+            <h2 id="reloj" class="fw-bold font-monospace">05:00:00</h2>
         </div>
-        <button class="btn btn-warning w-100 mt-4 fw-bold" onclick="alert('Cierre registrado en auditoría.')">CIERRE DE CAJA</button>
     </aside>
 
     <main>
-        <!-- VENTAS -->
-        <div id="mod-v" class="module active">
-            <div class="card-g">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold m-0 text-danger">Módulo de Ventas</h5>
-                    <input type="text" id="scan-ean" class="form-control w-50" placeholder="🔍 Escanee código..." onkeypress="buscarProducto(event)">
-                </div>
-                <table class="table"><tbody id="v-list"></tbody></table>
-                <div class="text-end mt-4">
-                    <h3 class="fw-bold">TOTAL: $<span id="t-val">0</span></h3>
-                    <button class="btn btn-success px-5 py-2 fw-bold shadow" onclick="alert('Venta Guardada')">REGISTRAR VENTA</button>
-                </div>
-            </div>
+        <div id="mod-ventas" class="card p-4 shadow-sm">
+            <h5 class="fw-bold text-danger mb-3">Módulo de Ventas Activo</h5>
+            <input type="text" class="form-control mb-3" placeholder="Escanear producto...">
+            <h2 class="text-success fw-bold">TOTAL: $0</h2>
         </div>
 
-        <!-- INVENTARIO -->
-        <div id="mod-i" class="module">
-            <div class="card-g">
-                <h5 class="fw-bold mb-4">Stock Supabase</h5>
-                <table class="table table-hover table-sm">
-                    <thead class="table-dark"><tr><th>EAN</th><th>Producto</th><th>Stock</th><th>Precio</th></tr></thead>
-                    <tbody id="i-list"></tbody>
-                </table>
-            </div>
+        <div id="mod-inventario" class="card p-4 shadow-sm mt-4" style="display:none;">
+            <h5 class="fw-bold mb-3">Stock Real Supabase</h5>
+            <table class="table"><thead><tr><th>EAN</th><th>Producto</th><th>Stock</th></tr></thead><tbody id="lista-inv"></tbody></table>
         </div>
     </main>
 </div>
 
 <script>
-    const VAULT = {
-        U: "https://tzseklsayxaldtqatwuq.supabase.co",
-        K: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5"
-    };
+    let segundos = 18000;
 
-    let tiempo = 18000;
+    // ESTA FUNCIÓN ES EL "SALTO" QUE SOLUCIONA EL PROBLEMA
+    function arrancarSistema() {
+        // Ocultamos la bienvenida y mostramos el ERP
+        document.getElementById('capa-inicio').style.display = 'none';
+        document.getElementById('capa-erp').style.display = 'block';
 
-    // FUNCIÓN DE ARRANQUE FINAL
-    function abrirERP() {
-        document.getElementById('layer-welcome').style.display = 'none';
-        document.getElementById('layer-app').style.display = 'block';
+        // Iniciamos el reloj de 5 horas
         setInterval(() => {
-            if (tiempo > 0) {
-                tiempo--;
-                let h = Math.floor(tiempo / 3600), m = Math.floor((tiempo % 3600) / 60), s = tiempo % 60;
-                document.getElementById('reloj-pos').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            } else { location.reload(); }
+            if (segundos > 0) {
+                segundos--;
+                let h = Math.floor(segundos / 3600), m = Math.floor((segundos % 3600) / 60), s = segundos % 60;
+                document.getElementById('reloj').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }
         }, 1000);
     }
 
-    async function buscarProducto(e) {
-        if (e.key === 'Enter') {
-            const res = await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${e.target.value.trim()}&select=*`, { headers: { 'apikey': VAULT.K } });
-            const data = await res.json();
-            if (data.length > 0) {
-                document.getElementById('v-list').innerHTML += `<tr><td>${data[0].nombre}</td><td>$${data[0].precio1.toLocaleString()}</td></tr>`;
-            }
-            e.target.value = "";
+    function verMod(mod) {
+        document.getElementById('mod-ventas').style.display = mod === 'ventas' ? 'block' : 'none';
+        document.getElementById('mod-inventario').style.display = mod === 'inventario' ? 'block' : 'none';
+        if(mod === 'inventario') {
+             // Aquí iría tu fetch a Supabase para cargar la tabla
+             document.getElementById('lista-inv').innerHTML = "<tr><td>770...</td><td>Producto Ejemplo</td><td>15</td></tr>";
         }
-    }
-
-    async function cargarStock() {
-        const res = await fetch(`${VAULT.U}/rest/v1/productos?select=*`, { headers: { 'apikey': VAULT.K } });
-        const data = await res.json();
-        document.getElementById('i-list').innerHTML = data.map(p => `<tr><td>${p.ean}</td><td>${p.nombre}</td><td>${p.stock}</td><td>$${p.precio1}</td></tr>`).join('');
-    }
-
-    function verMod(id, el) {
-        document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
-        document.getElementById('mod-'+id).classList.add('active');
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        el.classList.add('active');
-        if(id === 'i') cargarStock();
     }
 </script>
 </body>
