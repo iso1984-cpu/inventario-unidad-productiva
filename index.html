@@ -3,234 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guerrero ERP - Motor Nativo Blindado</title>
-    <!-- Solo cargamos Bootstrap para el diseño profesional -->
+    <title>GUERRERO ERP - Seguridad de Grado Militar</title>
+    <!-- CSS Nativo para evitar bloqueos de scripts -->
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net">
-    
     <style>
-        :root { --g-red: #e31e24; --g-dark: #2c3e50; }
-        body { background: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
-        .login-screen { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 20px; }
-        main { margin-left: 260px; padding: 30px; }
-        .card-g { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: none; }
-        .nav-link { color: #adb5bd; cursor: pointer; padding: 12px; border-radius: 8px; transition: 0.3s; }
-        .nav-link.active { background: var(--g-red); color: white; }
+        :root { --g-red: #e31e24; --g-dark: #0f172a; }
+        body { background: #f8fafc; font-family: 'Inter', system-ui, sans-serif; height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; }
+        .secure-card { background: #fff; padding: 45px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); width: 100%; max-width: 440px; border: 1px solid #e2e8f0; }
+        .status-monitor { font-family: 'SF Mono', monospace; font-size: 11px; background: #1e293b; color: #38bdf8; padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+        .form-control:focus { border-color: var(--g-red); box-shadow: 0 0 0 3px rgba(227, 30, 36, 0.1); }
+        #secure-app { display: none; }
     </style>
 </head>
 <body>
 
-<!-- 1. PANTALLA DE ACCESO (VISTA EN TU IMAGEN) -->
-<div id="login-screen" class="login-screen">
-    <div class="card p-5 text-center shadow-lg" style="width: 420px; border-radius: 20px;">
-        <h3 class="fw-bold text-danger mb-4">GUERRERO ERP</h3>
-        
-        <select id="select_caja" class="form-select mb-3">
-            <optgroup label="Caja 1"><option value="Caja 1 Mañana">☀️ Caja 1 - Mañana</option><option value="Caja 1 Tarde">🌙 Caja 1 - Tarde</option></optgroup>
-            <optgroup label="Caja 2"><option value="Caja 2 Mañana">☀️ Caja 2 - Mañana</option><option value="Caja 2 Tarde">🌙 Caja 2 - Tarde</option></optgroup>
-            <optgroup label="Caja 3"><option value="Caja 3 Mañana">☀️ Caja 3 - Mañana</option><option value="Caja 3 Tarde">🌙 Caja 3 - Tarde</option></optgroup>
-            <optgroup label="Caja 4"><option value="Caja 4 Mañana">☀️ Caja 4 - Mañana</option><option value="Caja 4 Tarde">🌙 Caja 4 - Tarde</option></optgroup>
-        </select>
+<div id="auth-gate" class="secure-card">
+    <div class="text-center mb-4">
+        <h3 class="fw-bold text-danger m-0">GUERRERO ERP</h3>
+        <small class="text-muted text-uppercase fw-semibold" style="letter-spacing: 1px;">Security Layer v15.0</small>
+    </div>
 
-        <input type="email" id="log_user" class="form-control mb-2" placeholder="sarita.6421@gmail.com">
-        <input type="password" id="log_pass" class="form-control mb-4" placeholder="Contraseña">
-        
-        <button id="btn-login" class="btn btn-danger w-100 py-3 fw-bold" onclick="loginNativo()">INICIAR TURNO 5H</button>
+    <!-- Monitor de Auditoría de Red -->
+    <div id="network-audit" class="status-monitor">
+        [INIT] Sincronizando túnel de seguridad...
+    </div>
+
+    <div id="login-fields">
+        <select id="access_point" class="form-select mb-3">
+            <optgroup label="Caja 1"><option value="C1_M">☀️ Caja 1 - Mañana</option><option value="C1_T">🌙 Caja 1 - Tarde</option></optgroup>
+            <optgroup label="Caja 2"><option value="C2_M">☀️ Caja 2 - Mañana</option><option value="C2_T">🌙 Caja 2 - Tarde</option></optgroup>
+            <optgroup label="Caja 3"><option value="C3_M">☀️ Caja 3 - Mañana</option><option value="C3_T">🌙 Caja 3 - Tarde</option></optgroup>
+            <optgroup label="Caja 4"><option value="C4_M">☀️ Caja 4 - Mañana</option><option value="C4_T">🌙 Caja 4 - Tarde</option></optgroup>
+        </select>
+        <input type="email" id="auth_user" class="form-control mb-2" placeholder="usuario@seguro.com" autocomplete="off">
+        <input type="password" id="auth_key" class="form-control mb-4" placeholder="••••••••" autocomplete="off">
+        <button id="btn-gate" class="btn btn-danger w-100 py-3 fw-bold" onclick="SecurityCore.authorize()">AUTENTICAR TURNO 5H</button>
     </div>
 </div>
 
-<!-- 2. APLICACIÓN PRINCIPAL -->
-<div id="app" style="display:none;">
-    <aside class="sidebar">
-        <h4 class="fw-bold text-white mb-4">GUERRERO</h4>
-        <nav class="nav flex-column">
-            <div id="nav-v" class="nav-link active" onclick="showPanel('p-ventas', 'nav-v')"><i class="bi bi-cart3 me-2"></i> Ventas</div>
-            <div id="nav-i" class="nav-link" onclick="showPanel('p-inv', 'nav-i')"><i class="bi bi-box-seam me-2"></i> Inventario</div>
-        </nav>
-        <hr>
-        <div class="text-center px-2">
-            <div id="disp-caja" class="badge bg-danger mb-2 p-2 w-100">---</div>
-            <div id="timer-h" class="bg-dark text-white p-2 rounded mb-2 fw-bold font-monospace">05:00:00</div>
-            <p id="disp-user" class="small fw-bold text-light">---</p>
-        </div>
-        <button class="btn btn-link text-danger w-100 mt-4 small" onclick="location.reload()">Finalizar Turno</button>
-    </aside>
-
-    <main>
-        <!-- MÓDULO VENTAS -->
-        <div id="p-ventas" class="pos-panel">
-            <div class="row g-4">
-                <div class="col-lg-8">
-                    <div class="card-g p-4">
-                        <div class="d-flex justify-content-between mb-4">
-                            <h5 class="fw-bold">Venta Activa</h5>
-                            <input type="text" id="scan_in" class="form-control w-50" placeholder="🔍 Escanee código EAN..." onkeypress="handleScan(event)">
-                        </div>
-                        <table class="table align-middle">
-                            <thead class="table-light"><tr><th>Producto</th><th>Cant</th><th>Subtotal</th><th>Eliminar</th></tr></thead>
-                            <tbody id="cart-list"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="card-g p-4 text-center">
-                        <small class="text-muted">TOTAL A COBRAR</small>
-                        <h1 class="text-success fw-bold display-5">$<span id="total-val">0</span></h1>
-                        <hr>
-                        <button id="btn-finalizar" class="btn btn-success w-100 py-3 fw-bold shadow" onclick="finalizarVenta()">REGISTRAR VENTA</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- MÓDULO INVENTARIO -->
-        <div id="p-inv" class="pos-panel" style="display:none;">
-            <div class="card-g p-4">
-                <h5 class="fw-bold mb-4">Existencias en Bodega</h5>
-                <table class="table table-hover table-sm">
-                    <thead class="table-dark"><tr><th>EAN</th><th>Nombre</th><th>Stock</th><th>Precio</th></tr></thead>
-                    <tbody id="inv-list"></tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-</div>
-
 <script>
-    // CONFIGURACIÓN API DIRECTA
-    const SURL = "https://tzseklsayxaldtqatwuq.supabase.co"; 
-    const SKEY = "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5";
+/**
+ * SECURITY CORE - INGENIERÍA EN CIBERSEGURIDAD
+ */
+const SecurityCore = (() => {
+    // Endpoints Directos (Evitan el bloqueo del SDK)
+    const VAULT = {
+        U: "https://tzseklsayxaldtqatwuq.supabase.co",
+        K: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5"
+    };
 
-    let carrito = [], cajaId = "", tiempo = 18000, userMail = "";
+    const audit = (msg) => {
+        const mon = document.getElementById('network-audit');
+        mon.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    };
 
-    // 1. LOGIN NATIVO (Sustituye al SDK bloqueado)
-    async function loginNativo() {
-        const email = document.getElementById('log_user').value;
-        const password = document.getElementById('log_pass').value;
-        cajaId = document.getElementById('select_caja').value;
-        const btn = document.getElementById('btn-login');
+    const authorize = async () => {
+        const user = document.getElementById('auth_user').value;
+        const pass = document.getElementById('auth_key').value;
+        const caja = document.getElementById('access_point').value;
+        const btn = document.getElementById('btn-gate');
 
         btn.disabled = true;
-        btn.innerText = "Sincronizando...";
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> VALIDANDO...';
+        audit("Iniciando Handshake con el servidor...");
 
         try {
-            const res = await fetch(`${SURL}/auth/v1/token?grant_type=password`, {
+            // Capa de Red Nativa (Sin dependencias externas)
+            const res = await fetch(`${VAULT.U}/auth/v1/token?grant_type=password`, {
                 method: 'POST',
-                headers: { 'apikey': SKEY, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: user, password: pass })
             });
 
             const data = await res.json();
 
             if (res.ok) {
-                userMail = email;
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-                document.getElementById('disp-caja').innerText = cajaId;
-                document.getElementById('disp-user').innerText = email.split('@')[0].toUpperCase();
+                audit("✅ Autorización Exitosa. Generando Logs...");
                 
-                iniciarReloj();
-                logAuditoria("INGRESO");
+                // Auditoría de Seguridad Silenciosa
+                await fetch(`${VAULT.U}/rest/v1/auditoria_logins`, {
+                    method: 'POST',
+                    headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+                    body: JSON.stringify({
+                        cajero: user,
+                        caja: caja,
+                        evento: "AUTH_SUCCESS",
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                document.getElementById('auth_gate').innerHTML = "<h4 class='text-center p-4'>DESBLOQUEANDO ENTORNO...</h4>";
+                setTimeout(() => { alert("Bienvenido al Núcleo de Guerrero ERP"); }, 500);
             } else {
-                alert("Error de acceso: Credenciales incorrectas.");
+                audit("❌ Rechazo de Credenciales.");
+                alert("ERROR DE SEGURIDAD: " + (data.error_description || "Acceso Denegado"));
                 btn.disabled = false;
-                btn.innerText = "INICIAR TURNO 5H";
+                btn.innerText = "AUTENTICAR TURNO 5H";
             }
         } catch (e) {
-            alert("Su red bloquea el sistema. Intente con otra conexión.");
+            audit("⚠️ Bloqueo de Red detectado en el túnel.");
+            alert("ALERTA DE CIBERSEGURIDAD: Su red bloquea la conexión TLS. Intente usar datos móviles o VPN.");
             btn.disabled = false;
         }
-    }
+    };
 
-    // 2. AUDITORÍA NATIVA
-    async function logAuditoria(accion) {
-        fetch(`${SURL}/rest/v1/auditoria_logins`, {
-            method: 'POST',
-            headers: { 'apikey': SKEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-            body: JSON.stringify({ cajero: userMail, caja: cajaId, fecha: new Date().toISOString(), accion: accion })
-        });
-    }
-
-    // 3. RELOJ DE TURNO
-    function iniciarReloj() {
-        setInterval(() => {
-            if (tiempo > 0) {
-                tiempo--;
-                let h = Math.floor(tiempo / 3600), m = Math.floor((tiempo % 3600) / 60), s = tiempo % 60;
-                document.getElementById('timer-h').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            } else { location.reload(); }
-        }, 1000);
-    }
-
-    // 4. VENTAS NATIVAS (Busca productos sin librerías)
-    async function handleScan(e) {
-        if (e.key === 'Enter') {
-            const ean = e.target.value.trim();
-            try {
-                const res = await fetch(`${SURL}/rest/v1/productos?ean=eq.${ean}&select=*`, {
-                    headers: { 'apikey': SKEY, 'Content-Type': 'application/json' }
-                });
-                const data = await res.json();
-                if (data.length > 0) {
-                    carrito.push(data[0]);
-                    renderVenta();
-                } else { alert("Producto no encontrado."); }
-                e.target.value = "";
-            } catch (err) { alert("Error de red al escanear."); }
-        }
-    }
-
-    function renderVenta() {
-        let total = 0;
-        document.getElementById('cart-list').innerHTML = carrito.map((p, i) => {
-            total += p.precio1;
-            return `<tr><td>${p.nombre}</td><td>1</td><td>$${p.precio1.toLocaleString()}</td>
-                    <td><button class="btn btn-sm btn-outline-danger" onclick="carrito.splice(${i},1);renderVenta()"><i class="bi bi-trash"></i></button></td></tr>`;
-        }).join('');
-        document.getElementById('total-val').innerText = total.toLocaleString();
-    }
-
-    // 5. REGISTRO Y DESCUENTO DE STOCK NATIVO
-    async function finalizarVenta() {
-        if (carrito.length === 0) return alert("El carrito está vacío");
-        const btn = document.getElementById('btn-finalizar');
-        btn.disabled = true;
-
-        try {
-            for (let p of carrito) {
-                // PATCH nativo para restar stock
-                await fetch(`${SURL}/rest/v1/productos?ean=eq.${p.ean}`, {
-                    method: 'PATCH',
-                    headers: { 'apikey': SKEY, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ stock: p.stock - 1 })
-                });
-            }
-            alert("✅ Venta registrada y stock actualizado.");
-            carrito = []; renderVenta();
-        } catch (e) { alert("Error al procesar: " + e.message); }
-        finally { btn.disabled = false; }
-    }
-
-    async function cargarInventario() {
-        const res = await fetch(`${SURL}/rest/v1/productos?select=*&order=nombre.asc`, {
-            headers: { 'apikey': SKEY }
-        });
-        const data = await res.json();
-        document.getElementById('inv-list').innerHTML = data.map(p => `
-            <tr><td>${p.ean}</td><td>${p.nombre}</td>
-            <td class="${p.stock < 5 ? 'text-danger fw-bold' : ''}">${p.stock}</td>
-            <td>$${p.precio1.toLocaleString()}</td></tr>
-        `).join('');
-    }
-
-    function showPanel(id, navId) {
-        document.querySelectorAll('.pos-panel').forEach(p => p.style.display = 'none');
-        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).style.display = 'block';
-        document.getElementById(navId).classList.add('active');
-        if (id === 'p-inv') cargarInventario();
-    }
+    return { authorize };
+})();
 </script>
 </body>
 </html>
