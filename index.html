@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUERRERO ERP v15 - Sistema Pro</title>
+    <title>GUERRERO ERP v15 - Seguridad Radical</title>
 
-    <!-- 1. LIBRERÍAS (Carga Correcta) -->
+    <!-- 1. CARGA DE LIBRERÍAS (CDNs FIABLES) -->
     <script src="https://cdn.jsdelivr.net"></script>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net">
@@ -14,16 +14,15 @@
 
     <style>
         :root { --g-red: #e31e24; --g-dark: #2c3e50; }
-        body { background-color: #f1f3f5; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        body { background-color: #f1f3f5; font-family: 'Inter', sans-serif; }
         .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 20px 0; z-index: 1000; }
         .nav-link { color: #adb5bd; padding: 12px 25px; display: flex; align-items: center; cursor: pointer; border-left: 4px solid transparent; text-decoration: none; }
         .nav-link.active { color: white; background: rgba(255,255,255,0.1); border-left-color: var(--g-red); }
         main { margin-left: 260px; padding: 30px; }
         .pos-panel { display: none; }
         .pos-panel.active { display: block; }
-        .card-g { background: white; border-radius: 12px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .card-g { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         .login-screen { position: fixed; inset: 0; background: #f1f3f5; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .timer-badge { background: #333; color: #fff; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -40,114 +39,98 @@
         </select>
         <input type="email" id="log_user" class="form-control mb-2" placeholder="usuario@correo.com">
         <input type="password" id="log_pass" class="form-control mb-4" placeholder="Contraseña">
-        <button class="btn btn-danger w-100 py-3 fw-bold" onclick="login()">INICIAR TURNO 5H</button>
+        <button id="btn-login" class="btn btn-danger w-100 py-3 fw-bold" onclick="login()">INICIAR TURNO 5H</button>
     </div>
 </div>
 
 <div id="app" style="display:none;">
     <aside class="sidebar shadow">
-        <div class="px-4 mb-5 text-center"><h4 class="fw-bold text-white m-0">GUERRERO</h4><small class="text-danger">Sistema 360°</small></div>
+        <div class="px-4 mb-5 text-center text-white"><h4>GUERRERO</h4><small class="text-danger">Sistema 360°</small></div>
         <nav>
             <div class="nav-link active" onclick="showPanel('p-ventas', this)"><i class="bi bi-cart3 me-2"></i> Ventas</div>
             <div class="nav-link" onclick="showPanel('p-inventario', this)"><i class="bi bi-list-check me-2"></i> Inventario</div>
         </nav>
         <hr>
         <div class="text-center px-3">
-            <div class="badge bg-danger mb-2 px-3 py-2 w-100" id="label-caja">---</div>
-            <div id="timer-h" class="timer-badge mb-2">05:00:00</div>
-            <p id="cajero-name" class="small fw-bold mt-2 text-light">Cajero: ---</p>
+            <div id="label-caja" class="badge bg-danger mb-2 p-2 w-100">---</div>
+            <div id="timer-h" class="bg-dark text-white p-2 rounded mb-2 fw-bold">05:00:00</div>
+            <p id="cajero-name" class="small text-light">---</p>
         </div>
-        <button class="btn btn-link text-danger w-100 mt-4 small" onclick="location.reload()">Cerrar Sesión</button>
     </aside>
 
     <main>
-        <div id="alert-turno" class="alert alert-danger text-center fw-bold mb-4" style="display:none;">🚨 TURNO FINALIZADO. Realice el cierre.</div>
-
         <div id="p-ventas" class="pos-panel active">
             <div class="row g-4">
                 <div class="col-lg-8">
                     <div class="card-g p-4">
-                        <input type="text" id="scan_out" class="form-control mb-4" placeholder="🔍 Escanear EAN..." onkeypress="handleVenta(event)">
-                        <table class="table">
-                            <thead><tr><th>Producto</th><th>Cant.</th><th>Subtotal</th><th>Acción</th></tr></thead>
-                            <tbody id="list-v"></tbody>
-                        </table>
+                        <input type="text" id="scan_out" class="form-control mb-4" placeholder="🔍 Escanear producto..." onkeypress="handleVenta(event)">
+                        <table class="table"><tbody id="list-v"></tbody></table>
                     </div>
                 </div>
                 <div class="col-lg-4">
                     <div class="card-g p-4 text-center">
-                        <small class="text-muted">TOTAL A PAGAR</small>
-                        <h1 class="text-success fw-bold display-4">$<span id="total-v">0</span></h1>
-                        <button id="btn-finalizar" class="btn btn-success w-100 py-3 mt-4 fw-bold" onclick="finalizarVenta()">REGISTRAR Y ENVIAR</button>
+                        <h1 class="text-success">$<span id="total-v">0</span></h1>
+                        <button id="btn-finalizar" class="btn btn-success w-100 py-3" onclick="finalizarVenta()">REGISTRAR Y ENVIAR</button>
                     </div>
                 </div>
             </div>
         </div>
-
         <div id="p-inventario" class="pos-panel">
             <div class="card-g p-4">
-                <div class="d-flex justify-content-between mb-3">
-                    <h5 class="fw-bold">Stock en Tiempo Real</h5>
-                    <button class="btn btn-sm btn-outline-success" onclick="exportarExcel()">Exportar Excel</button>
-                </div>
-                <table class="table table-sm" id="tabla-stock">
-                    <thead class="table-dark"><tr><th>EAN</th><th>Nombre</th><th>Stock</th><th>Precio</th></tr></thead>
-                    <tbody id="list-inv"></tbody>
-                </table>
+                <button class="btn btn-sm btn-success mb-3" onclick="exportarExcel()">Exportar Excel</button>
+                <table class="table table-sm"><tbody id="list-inv"></tbody></table>
             </div>
         </div>
     </main>
 </div>
 
 <script>
-    // CONFIGURACIÓN (Reemplaza con tus IDs de EmailJS)
-    const SURL = "https://tzseklsayxaldtqatwuq.supabase.co"; 
+    // ✅ 1. INICIALIZACIÓN GLOBAL SEGURA
+    const SURL = "https://tzseklsayxaldtqatwuq.supabase.co";
     const SKEY = "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5";
-    const supabase = window.supabase.createClient(SURL, SKEY);
-    
-    emailjs.init("TU_USER_ID_EMAILJS");
+    let supabase, carrito = [], cajaId = "", tiempo = 18000, currentUser = "";
 
-    let carrito = [], cajaId = "", tiempo = 18000, currentUser = "";
+    window.onload = () => {
+        try {
+            supabase = window.supabase.createClient(SURL, SKEY);
+            emailjs.init("TU_USER_ID_EMAILJS");
+            console.log("✅ Sistema inicializado correctamente.");
+        } catch (e) { console.error("Error cargando Supabase:", e); }
+    };
 
+    // ✅ 2. LOGIN SEGURO (Resuelve el ReferenceError de cajaId)
     async function login() {
-        cajaId = document.getElementById('select_caja').value; // CORRECCIÓN: Definir antes de usar
+        cajaId = document.getElementById('select_caja').value; // Declarado antes del uso
         const email = document.getElementById('log_user').value;
         const pass = document.getElementById('log_pass').value;
 
+        if(!supabase) return alert("El sistema aún está cargando...");
+
         const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-        
-        if (error) {
-            alert("Error: " + error.message);
-        } else {
-            currentUser = email;
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-            document.getElementById('label-caja').innerText = cajaId;
-            document.getElementById('cajero-name').innerText = email;
-            iniciarContador();
-        }
+        if (error) return alert("Acceso fallido: " + error.message);
+
+        currentUser = email;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        document.getElementById('label-caja').innerText = cajaId;
+        document.getElementById('cajero-name').innerText = email;
+        iniciarContador();
     }
 
     function iniciarContador() {
         setInterval(() => {
             if (tiempo > 0) {
                 tiempo--;
-                let h = Math.floor(tiempo / 3600), m = Math.floor((tiempo % 3600) / 60), s = tiempo % 60;
+                let h = Math.floor(tiempo/3600), m = Math.floor((tiempo%3600)/60), s = tiempo%60;
                 document.getElementById('timer-h').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            } else {
-                document.getElementById('alert-turno').style.display = 'block';
-            }
+            } else { document.getElementById('app').innerHTML = "<h1 class='text-center mt-5'>TURNO VENCIDO - CIERRE SESIÓN</h1>"; }
         }, 1000);
     }
 
     async function handleVenta(e) {
         if (e.key === 'Enter') {
-            const ean = e.target.value.trim();
-            const { data } = await supabase.from('productos').select('*').eq('ean', ean).single();
-            if (data && data.stock > 0) {
-                carrito.push({...data});
-                renderCarrito();
-            } else { alert("Sin stock o no encontrado"); }
+            const { data } = await supabase.from('productos').select('*').eq('ean', e.target.value).single();
+            if (data && data.stock > 0) { carrito.push(data); renderCarrito(); }
             e.target.value = "";
         }
     }
@@ -156,7 +139,7 @@
         let total = 0;
         document.getElementById('list-v').innerHTML = carrito.map((p, i) => {
             total += p.precio1;
-            return `<tr><td>${p.nombre}</td><td>1</td><td>$${p.precio1.toLocaleString()}</td><td><button class="btn btn-sm btn-danger" onclick="carrito.splice(${i},1);renderCarrito()">X</button></td></tr>`;
+            return `<tr><td>${p.nombre}</td><td>$${p.precio1.toLocaleString()}</td><td><button class="btn btn-sm btn-danger" onclick="carrito.splice(${i},1);renderCarrito()">X</button></td></tr>`;
         }).join('');
         document.getElementById('total-v').innerText = total.toLocaleString();
     }
@@ -167,45 +150,24 @@
         btn.disabled = true;
 
         try {
-            let detalle = carrito.map(p => `${p.nombre} - $${p.precio1}`).join('\n');
-            
-            for (const item of carrito) {
-                const { data } = await supabase.from('productos').select('stock').eq('ean', item.ean).single();
-                await supabase.from('productos').update({ stock: data.stock - 1 }).eq('ean', item.ean);
+            // Descuento de Stock y Envío EmailJS
+            for (let p of carrito) {
+                const { data } = await supabase.from('productos').select('stock').eq('ean', p.ean).single();
+                await supabase.from('productos').update({ stock: data.stock - 1 }).eq('ean', p.ean);
             }
-
-            // ENVÍO DE CORREO
             await emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-                caja: cajaId,
-                vendedor: currentUser,
-                total: document.getElementById('total-v').innerText,
-                detalle: detalle,
-                to_email: "tu-correo-admin@gmail.com"
+                caja: cajaId, vendedor: currentUser, total: document.getElementById('total-v').innerText,
+                detalle: carrito.map(p => p.nombre).join(', '), to_email: "admin@correo.com"
             });
-
-            alert("✅ Venta registrada y reporte enviado.");
-            carrito = [];
-            renderCarrito();
-        } catch (err) { alert("Error: " + err.message); }
+            alert("Venta registrada y reporte enviado.");
+            carrito = []; renderCarrito();
+        } catch (e) { alert("Error: " + e.message); }
         finally { btn.disabled = false; }
-    }
-
-    async function cargarInventario() {
-        const { data } = await supabase.from('productos').select('*');
-        document.getElementById('list-inv').innerHTML = data.map(p => `<tr><td>${p.ean}</td><td>${p.nombre}</td><td>${p.stock}</td><td>$${p.precio1}</td></tr>`).join('');
     }
 
     function showPanel(id, el) {
         document.querySelectorAll('.pos-panel').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        if(id === 'p-inventario') cargarInventario();
-    }
-
-    function exportarExcel() {
-        const ws = XLSX.utils.table_to_sheet(document.getElementById("tabla-stock"));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Stock");
-        XLSX.writeFile(wb, `Inventario_${cajaId}.xlsx`);
     }
 </script>
 </body>
