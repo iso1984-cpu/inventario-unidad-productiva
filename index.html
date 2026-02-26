@@ -3,93 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUERRERO ERP - Operación Total</title>
+    <title>GUERRERO ERP - Remisionar v15</title>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net">
     <style>
         :root { --g-red: #e31e24; --g-dark: #0f172a; }
-        body { background: #f1f5f9; font-family: sans-serif; margin: 0; }
+        body { background: #f1f5f9; font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; }
 
-        /* CAPA DE BIENVENIDA (La barrera) */
-        #capa-inicio { 
-            position: fixed; inset: 0; background: white; z-index: 9999; 
+        /* PANTALLA DE INICIO (LA QUE SE VE EN TU IMAGEN) */
+        #pantalla-espera { 
+            position: fixed; inset: 0; background: white; z-index: 5000; 
             display: flex; align-items: center; justify-content: center; text-align: center;
         }
+        .card-espera { padding: 40px; border-radius: 25px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); max-width: 450px; border: 1px solid #eee; }
 
-        /* CAPA DEL ERP (El contenido) */
-        #capa-erp { display: none; } /* ESTO ES LO QUE SE ACTIVA AL DAR CLIC */
-
-        .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 250px; position: fixed; padding: 20px; }
-        main { margin-left: 260px; padding: 30px; }
+        /* PANEL OPERATIVO (ERP COMPLETO - OCULTO AL INICIO) */
+        #panel-erp { display: none; }
+        .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 25px; z-index: 1000; }
+        main { margin-left: 260px; padding: 30px; min-height: 100vh; }
+        
+        .nav-link { color: #94a3b8; cursor: pointer; padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; }
+        .nav-link.active { background: var(--g-red); color: white; box-shadow: 0 4px 15px rgba(227, 30, 36, 0.3); }
+        .card-g { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 25px; }
+        
+        .reloj-v { background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 12px; font-family: monospace; font-weight: bold; font-size: 1.6rem; }
     </style>
 </head>
 <body>
 
-<!-- 1. PANTALLA DE INICIO (CAPA 1) -->
-<div id="capa-inicio">
-    <div class="card p-5 shadow-lg border-0" style="max-width: 450px; border-radius: 25px;">
-        <h3 class="text-danger fw-bold mb-4">GUERRERO ERP</h3>
-        <p class="fw-bold fs-5">"Les agradecemos por ser parte de nuestro equipo. Que Dios los bendiga y que el turno sea un éxito."</p>
-        <hr>
-        <button class="btn btn-danger w-100 py-3 fw-bold fs-5 shadow" onclick="arrancarSistema()">
-            ARRANCAR SISTEMA
+<!-- 1. PANTALLA DE ESPERA CON EL BOTÓN SOLICITADO -->
+<div id="pantalla-espera">
+    <div class="card-espera">
+        <h4 class="text-muted mb-2">Caja 1 Mañana</h4>
+        <p class="small text-uppercase fw-bold text-secondary">Turno Activo (5 Horas)</p>
+        
+        <div id="cronometro-inicio" class="display-3 fw-bold my-4 font-monospace">04:58:51</div>
+        
+        <p class="fw-bold text-muted mb-4">Cajero: SARITA.6421</p>
+
+        <div class="alert alert-light border-0 py-3 mb-4">
+            <p class="fw-bold text-dark mb-0 small">
+                "Les agradecemos por ser parte de nuestro equipo. <br> 
+                Que Dios los bendiga y que el turno sea un éxito."
+            </p>
+        </div>
+
+        <!-- BOTÓN REMISIONAR: EL "SALTO" AL ERP -->
+        <button class="btn btn-danger w-100 py-3 fw-bold shadow-lg fs-5 mb-3" onclick="abrirRemision()">
+            <i class="bi bi-cart-plus-fill me-2"></i> REMISIONAR
         </button>
+
+        <button class="btn btn-outline-secondary w-100 py-1 btn-sm" onclick="location.reload()">FINALIZAR TURNO</button>
     </div>
 </div>
 
-<!-- 2. PANEL OPERATIVO (CAPA 2) -->
-<div id="capa-erp">
+<!-- 2. PANEL OPERATIVO (EL SIGUIENTE MÓDULO) -->
+<div id="panel-erp">
     <aside class="sidebar">
-        <h4 class="text-white fw-bold mb-4">GUERRERO</h4>
+        <h4 class="fw-bold text-white mb-5 text-center">GUERRERO <span class="text-danger">ERP</span></h4>
         <nav class="nav flex-column">
-            <button class="btn btn-danger mb-2 w-100 text-start" onclick="verMod('ventas')">🛒 Ventas</button>
-            <button class="btn btn-outline-light mb-2 w-100 text-start" onclick="verMod('inventario')">📦 Inventario</button>
+            <div class="nav-link active" onclick="cambiarMod('v', this)"><i class="bi bi-cart3 me-3"></i> Ventas</div>
+            <div class="nav-link" onclick="cambiarMod('i', this)"><i class="bi bi-box-seam me-3"></i> Inventario</div>
         </nav>
-        <div class="mt-5 text-center">
-            <div class="badge bg-danger p-2 w-100 mb-2">CAJA 1 MAÑANA</div>
-            <h2 id="reloj" class="fw-bold font-monospace">05:00:00</h2>
+        <hr class="text-secondary my-5">
+        <div class="text-center">
+            <div id="reloj-erp" class="reloj-v">04:58:51</div>
+            <p class="small fw-bold mt-3 text-light">Cajero: SARITA.6421</p>
         </div>
     </aside>
 
     <main>
-        <div id="mod-ventas" class="card p-4 shadow-sm">
-            <h5 class="fw-bold text-danger mb-3">Módulo de Ventas Activo</h5>
-            <input type="text" class="form-control mb-3" placeholder="Escanear producto...">
-            <h2 class="text-success fw-bold">TOTAL: $0</h2>
-        </div>
-
-        <div id="mod-inventario" class="card p-4 shadow-sm mt-4" style="display:none;">
-            <h5 class="fw-bold mb-3">Stock Real Supabase</h5>
-            <table class="table"><thead><tr><th>EAN</th><th>Producto</th><th>Stock</th></tr></thead><tbody id="lista-inv"></tbody></table>
+        <!-- MÓDULO DE VENTAS -->
+        <div id="mod-v" class="card-g">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold m-0"><i class="bi bi-upc-scan me-2 text-danger"></i> Nueva Remisión de Salida</h5>
+                <input type="text" class="form-control w-50" placeholder="🔍 Escanee código..." onkeypress="if(event.key==='Enter') alert('Buscando en Supabase...')">
+            </div>
+            <table class="table"><tbody id="v-list"></tbody></table>
+            <div class="text-end mt-4">
+                <h2 class="fw-bold text-success">TOTAL: $0</h2>
+                <button class="btn btn-success px-5 py-2 fw-bold" onclick="alert('Venta Registrada')">FINALIZAR REMISIÓN</button>
+            </div>
         </div>
     </main>
 </div>
 
 <script>
-    let segundos = 18000;
+    let tiempoSegundos = 17931; // Basado en tu imagen (04:58:51)
 
-    // ESTA FUNCIÓN ES EL "SALTO" QUE SOLUCIONA EL PROBLEMA
-    function arrancarSistema() {
-        // Ocultamos la bienvenida y mostramos el ERP
-        document.getElementById('capa-inicio').style.display = 'none';
-        document.getElementById('capa-erp').style.display = 'block';
-
-        // Iniciamos el reloj de 5 horas
+    // FUNCIÓN DE SALTO INTEGRAL
+    function abrirRemision() {
+        // Ocultar pantalla de espera y mostrar el ERP
+        document.getElementById('pantalla-espera').style.display = 'none';
+        document.getElementById('panel-erp').style.display = 'block';
+        
+        // Sincronizar Relojes
         setInterval(() => {
-            if (segundos > 0) {
-                segundos--;
-                let h = Math.floor(segundos / 3600), m = Math.floor((segundos % 3600) / 60), s = segundos % 60;
-                document.getElementById('reloj').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            if (tiempoSegundos > 0) {
+                tiempoSegundos--;
+                let h = Math.floor(tiempoSegundos / 3600), m = Math.floor((tiempoSegundos % 3600) / 60), s = tiempoSegundos % 60;
+                let fmt = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                document.getElementById('cronometro-inicio').innerText = fmt;
+                document.getElementById('reloj-erp').innerText = fmt;
             }
         }, 1000);
     }
 
-    function verMod(mod) {
-        document.getElementById('mod-ventas').style.display = mod === 'ventas' ? 'block' : 'none';
-        document.getElementById('mod-inventario').style.display = mod === 'inventario' ? 'block' : 'none';
-        if(mod === 'inventario') {
-             // Aquí iría tu fetch a Supabase para cargar la tabla
-             document.getElementById('lista-inv').innerHTML = "<tr><td>770...</td><td>Producto Ejemplo</td><td>15</td></tr>";
-        }
+    function cambiarMod(mod, el) {
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        el.classList.add('active');
+        // Lógica para cambiar entre vistas de Ventas e Inventario
     }
 </script>
 </body>
