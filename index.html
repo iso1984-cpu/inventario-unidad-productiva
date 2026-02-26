@@ -2,57 +2,56 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUERRERO ERP - Auditoría de Núcleo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GUERRERO ERP v15 - Modo Móvil Blindado</title>
 
-    <!-- Bootstrap Prioritario -->
+    <!-- 1. CARGA DE SEGURIDAD (Si falla internet, el sistema avisará) -->
+    <script src="https://cdn.jsdelivr.net"></script>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
-    
+
     <style>
         :root { --g-red: #e31e24; --g-dark: #2c3e50; }
-        body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .login-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); width: 100%; max-width: 460px; }
-        .progress { height: 10px; border-radius: 10px; margin-bottom: 10px; background-color: #e9ecef; }
-        .progress-bar { background-color: var(--g-red); transition: width 0.4s ease; }
-        .audit-log { font-family: monospace; font-size: 0.7rem; background: #222; color: #0f0; padding: 10px; border-radius: 8px; max-height: 80px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #444; }
-        #app { display: none; position: fixed; inset: 0; background: white; z-index: 10000; padding: 30px; }
+        body { background: #f1f3f5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; padding: 20px; }
+        .login-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .progress { height: 8px; border-radius: 10px; margin-bottom: 15px; }
+        .progress-bar { background-color: var(--g-red); transition: width 0.5s; }
+        .audit-box { font-family: monospace; font-size: 0.65rem; background: #000; color: #0f0; padding: 10px; border-radius: 8px; max-height: 80px; overflow-y: auto; text-align: left; margin-bottom: 20px; }
+        #app-pos { display: none; position: fixed; inset: 0; background: white; z-index: 10000; padding: 15px; overflow-y: auto; }
+        .btn-mobile { padding: 15px; font-weight: bold; border-radius: 12px; font-size: 1rem; }
     </style>
 </head>
 <body>
 
-<div id="login-screen" class="login-card shadow">
-    <h3 class="fw-bold text-danger text-center mb-4">GUERRERO ERP</h3>
+<div id="login-screen" class="login-card">
+    <h3 class="fw-bold text-danger mb-4">GUERRERO ERP</h3>
     
-    <!-- Barra de Progreso de Ingeniería -->
-    <div class="small text-muted mb-1 d-flex justify-content-between">
-        <span id="load-status">Sincronizando...</span>
-        <span id="load-perc">0%</span>
+    <!-- Barra de Progreso para Celular -->
+    <div class="d-flex justify-content-between small mb-1">
+        <span id="load-txt" class="text-muted">Sincronizando núcleo...</span>
+        <span id="load-perc" class="fw-bold">0%</span>
     </div>
-    <div class="progress mb-3">
-        <div id="main-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
-    </div>
-
-    <!-- Consola de Auditoría en Tiempo Real -->
-    <div id="audit-console" class="audit-log">
-        > Iniciando secuencia de arranque...<br>
+    <div class="progress">
+        <div id="main-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
     </div>
 
-    <div id="login-form" style="opacity: 0.5; pointer-events: none;">
-        <select id="select_caja" class="form-select mb-3">
-            <option value="Caja 1 Mañana">☀️ Caja 1 - Mañana</option>
-            <option value="Caja 1 Tarde">🌙 Caja 1 - Tarde</option>
-            <option value="Caja 2 Mañana">☀️ Caja 2 - Mañana</option>
-            <option value="Caja 2 Tarde">🌙 Caja 2 - Tarde</option>
+    <div id="audit-log" class="audit-box">> Iniciando sistema móvil...</div>
+
+    <div id="form-access" style="opacity: 0.3; pointer-events: none; transition: 0.5s;">
+        <select id="select_caja" class="form-select mb-3 py-2">
+            <optgroup label="Caja 1"><option value="Caja 1 Mañana">☀️ Caja 1 - Mañana</option><option value="Caja 1 Tarde">🌙 Caja 1 - Tarde</option></optgroup>
+            <optgroup label="Caja 2"><option value="Caja 2 Mañana">☀️ Caja 2 - Mañana</option><option value="Caja 2 Tarde">🌙 Caja 2 - Tarde</option></optgroup>
+            <optgroup label="Caja 3"><option value="Caja 3 Mañana">☀️ Caja 3 - Mañana</option><option value="Caja 3 Tarde">🌙 Caja 3 - Tarde</option></optgroup>
+            <optgroup label="Caja 4"><option value="Caja 4 Mañana">☀️ Caja 4 - Mañana</option><option value="Caja 4 Tarde">🌙 Caja 4 - Tarde</option></optgroup>
         </select>
-        <input type="email" id="log_user" class="form-control mb-2" placeholder="sarita.6421@gmail.com">
-        <input type="password" id="log_pass" class="form-control mb-4" placeholder="••••••••">
-        <button id="btn-login" class="btn btn-danger w-100 py-3 fw-bold shadow" onclick="GuerreroCore.login()" disabled>CONECTANDO...</button>
+        <input type="email" id="log_user" class="form-control mb-2 py-2" placeholder="usuario@correo.com">
+        <input type="password" id="log_pass" class="form-control mb-4 py-2" placeholder="••••••••">
+        <button id="btn-login" class="btn btn-danger w-100 btn-mobile shadow" onclick="GuerreroCore.login()" disabled>CONECTANDO...</button>
     </div>
 </div>
 
 <script>
 /**
- * ESTRATEGIA MULTI-ORIGEN Y AUDITORÍA PRO
+ * GUERRERO CORE V15 - ESTRATEGIA MÓVIL
  */
 const GuerreroCore = (() => {
     const CONFIG = {
@@ -60,70 +59,38 @@ const GuerreroCore = (() => {
         SKEY: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5"
     };
 
-    // Fuentes de respaldo (CDNs alternativos)
-    const SDK_SOURCES = [
-        "https://cdn.jsdelivr.net",
-        "https://unpkg.com",
-        "https://cdnjs.cloudflare.com"
-    ];
-
     let client = null;
 
-    const log = (msg) => {
-        const console = document.getElementById('audit-console');
-        console.innerHTML += `> ${msg}<br>`;
-        console.scrollTop = console.scrollHeight;
+    const log = (m) => { document.getElementById('audit-log').innerHTML += `> ${m}<br>`; };
+    const update = (p, t) => { 
+        document.getElementById('main-bar').style.width = p + '%';
+        document.getElementById('load-perc').innerText = p + '%';
+        document.getElementById('load-txt').innerText = t;
     };
 
-    const updateProgress = (perc, status) => {
-        document.getElementById('main-bar').style.width = perc + '%';
-        document.getElementById('load-perc').innerText = perc + '%';
-        document.getElementById('load-status').innerText = status;
-    };
-
-    const loadSDK = (url) => {
-        return new Promise((resolve) => {
-            const script = document.createElement('script');
-            script.src = url;
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.head.appendChild(script);
-        });
-    };
-
-    const bootSequence = async () => {
-        updateProgress(10, "Buscando SDK...");
-        log("Probando fuente primaria (jsDelivr)...");
-
-        for (let i = 0; i < SDK_SOURCES.length; i++) {
-            const success = await loadSDK(SDK_SOURCES[i]);
-            if (success && window.supabase) {
-                log(`Fuente ${i+1} cargada con éxito.`);
-                updateProgress(60, "SDK Detectado");
-                break;
-            } else {
-                log(`Falla en fuente ${i+1}. Reintentando alternativa...`);
-            }
+    const boot = async () => {
+        update(20, "Buscando SDK...");
+        
+        // Bucle de detección rápida (Ideal para procesadores de móvil)
+        let ready = false;
+        for(let i=0; i<10; i++) {
+            if(window.supabase) { ready = true; break; }
+            await new Promise(r => setTimeout(r, 400));
         }
 
-        if (window.supabase) {
-            try {
-                updateProgress(80, "Inicializando Cliente");
-                client = window.supabase.createClient(CONFIG.SURL, CONFIG.SKEY);
-                log("Conexión con Supabase establecida.");
-                
-                updateProgress(100, "Sistema Listo");
-                document.getElementById('login-form').style.opacity = "1";
-                document.getElementById('login-form').style.pointerEvents = "auto";
-                document.getElementById('btn-login').disabled = false;
-                document.getElementById('btn-login').innerText = "INICIAR TURNO";
-            } catch (e) {
-                log("ERROR: Fallo en creación de cliente.");
-                updateProgress(0, "Error de Config");
-            }
+        if(ready) {
+            update(60, "Inicializando...");
+            client = window.supabase.createClient(CONFIG.SURL, CONFIG.SKEY);
+            log("Conexión exitosa.");
+            update(100, "Listo para ingreso");
+            document.getElementById('form-access').style.opacity = "1";
+            document.getElementById('form-access').style.pointerEvents = "auto";
+            document.getElementById('btn-login').disabled = false;
+            document.getElementById('btn-login').innerText = "INICIAR TURNO";
         } else {
-            log("CRÍTICO: Todas las fuentes fallaron (Bloqueo de Red)");
-            updateProgress(0, "Acceso Bloqueado");
+            update(0, "Error de Red");
+            log("CRÍTICO: SDK bloqueado por el operador móvil.");
+            alert("Su red bloquea el sistema. Use WiFi o cambie de navegador.");
         }
     };
 
@@ -133,24 +100,25 @@ const GuerreroCore = (() => {
         const btn = document.getElementById('btn-login');
 
         btn.disabled = true;
-        btn.innerText = "VERIFICANDO...";
-        log(`Auditando acceso para: ${email}`);
+        btn.innerText = "VALIDANDO...";
+        log(`Auditando: ${email}`);
 
         const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
 
         if (error) {
-            log(`Rechazado: ${error.message}`);
-            alert("Error: " + error.message);
+            log(`Error: ${error.message}`);
+            alert(error.message);
             btn.disabled = false;
             btn.innerText = "REINTENTAR";
         } else {
-            log("Acceso concedido. Entrando al sistema...");
-            document.getElementById('login-screen').innerHTML = "<h4 class='text-center'>ENTRANDO AL NÚCLEO...</h4>";
-            // Aquí puedes cargar tu vista de ventas
+            log("Acceso concedido. Entrando...");
+            // REGISTRO DE AUDITORÍA AUTOMÁTICO
+            await client.from('auditoria').insert([{ user: email, caja: document.getElementById('select_caja').value }]);
+            location.href = "panel_ventas.html"; // O tu siguiente vista
         }
     };
 
-    window.addEventListener('DOMContentLoaded', bootSequence);
+    window.addEventListener('DOMContentLoaded', boot);
     return { login };
 })();
 </script>
