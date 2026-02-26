@@ -3,27 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guerrero ERP - Sistema Nativo Blindado</title>
-    <!-- Bootstrap para diseño profesional -->
+    <title>Guerrero ERP - Motor Nativo Blindado</title>
+    <!-- Solo cargamos Bootstrap para el diseño profesional -->
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net">
-    <script type="text/javascript" src="https://cdn.jsdelivr.net"></script>
-
+    
     <style>
         :root { --g-red: #e31e24; --g-dark: #2c3e50; }
-        body { background: #f4f7f6; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        body { background: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
         .login-screen { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 20px; }
         main { margin-left: 260px; padding: 30px; }
-        .card-g { background: white; border-radius: 15px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .nav-link { color: #adb5bd; cursor: pointer; padding: 12px; border-radius: 8px; margin-bottom: 5px; }
+        .card-g { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: none; }
+        .nav-link { color: #adb5bd; cursor: pointer; padding: 12px; border-radius: 8px; transition: 0.3s; }
         .nav-link.active { background: var(--g-red); color: white; }
-        .timer-badge { background: #1a1a1a; color: #fff; padding: 8px; border-radius: 10px; font-weight: bold; font-family: monospace; }
     </style>
 </head>
 <body>
 
-<!-- ACCESO AL SISTEMA -->
+<!-- 1. PANTALLA DE ACCESO (VISTA EN TU IMAGEN) -->
 <div id="login-screen" class="login-screen">
     <div class="card p-5 text-center shadow-lg" style="width: 420px; border-radius: 20px;">
         <h3 class="fw-bold text-danger mb-4">GUERRERO ERP</h3>
@@ -35,28 +33,28 @@
             <optgroup label="Caja 4"><option value="Caja 4 Mañana">☀️ Caja 4 - Mañana</option><option value="Caja 4 Tarde">🌙 Caja 4 - Tarde</option></optgroup>
         </select>
 
-        <input type="email" id="log_user" class="form-control mb-2" placeholder="usuario@correo.com">
+        <input type="email" id="log_user" class="form-control mb-2" placeholder="sarita.6421@gmail.com">
         <input type="password" id="log_pass" class="form-control mb-4" placeholder="Contraseña">
         
-        <button id="btn-login" class="btn btn-danger w-100 py-3 fw-bold shadow" onclick="loginNativo()">INICIAR TURNO 5H</button>
+        <button id="btn-login" class="btn btn-danger w-100 py-3 fw-bold" onclick="loginNativo()">INICIAR TURNO 5H</button>
     </div>
 </div>
 
-<!-- APLICACIÓN PRINCIPAL -->
+<!-- 2. APLICACIÓN PRINCIPAL -->
 <div id="app" style="display:none;">
-    <aside class="sidebar shadow">
-        <div class="mb-5 text-center"><h4 class="fw-bold m-0">GUERRERO</h4><small class="text-danger">Sistema 360°</small></div>
+    <aside class="sidebar">
+        <h4 class="fw-bold text-white mb-4">GUERRERO</h4>
         <nav class="nav flex-column">
-            <div class="nav-link active" onclick="showP('p-ventas', this)"><i class="bi bi-cart me-2"></i> Ventas</div>
-            <div class="nav-link" onclick="showP('p-inv', this)"><i class="bi bi-box me-2"></i> Inventario</div>
+            <div id="nav-v" class="nav-link active" onclick="showPanel('p-ventas', 'nav-v')"><i class="bi bi-cart3 me-2"></i> Ventas</div>
+            <div id="nav-i" class="nav-link" onclick="showPanel('p-inv', 'nav-i')"><i class="bi bi-box-seam me-2"></i> Inventario</div>
         </nav>
         <hr>
-        <div class="text-center">
+        <div class="text-center px-2">
             <div id="disp-caja" class="badge bg-danger mb-2 p-2 w-100">---</div>
-            <div id="timer-h" class="timer-badge mb-2 fs-5">05:00:00</div>
-            <p id="disp-user" class="small fw-bold mt-2">Cajero: ---</p>
+            <div id="timer-h" class="bg-dark text-white p-2 rounded mb-2 fw-bold font-monospace">05:00:00</div>
+            <p id="disp-user" class="small fw-bold text-light">---</p>
         </div>
-        <button class="btn btn-link text-danger w-100 mt-4 small" onclick="location.reload()">Cerrar Sesión</button>
+        <button class="btn btn-link text-danger w-100 mt-4 small" onclick="location.reload()">Finalizar Turno</button>
     </aside>
 
     <main>
@@ -66,11 +64,11 @@
                 <div class="col-lg-8">
                     <div class="card-g p-4">
                         <div class="d-flex justify-content-between mb-4">
-                            <h5 class="fw-bold">Nueva Remisión</h5>
-                            <input type="text" id="scan_in" class="form-control w-50" placeholder="🔍 Escanee producto..." onkeypress="handleScan(event)">
+                            <h5 class="fw-bold">Venta Activa</h5>
+                            <input type="text" id="scan_in" class="form-control w-50" placeholder="🔍 Escanee código EAN..." onkeypress="handleScan(event)">
                         </div>
                         <table class="table align-middle">
-                            <thead class="table-light"><tr><th>Producto</th><th>Cant</th><th>Subtotal</th><th>Acción</th></tr></thead>
+                            <thead class="table-light"><tr><th>Producto</th><th>Cant</th><th>Subtotal</th><th>Eliminar</th></tr></thead>
                             <tbody id="cart-list"></tbody>
                         </table>
                     </div>
@@ -78,9 +76,9 @@
                 <div class="col-lg-4">
                     <div class="card-g p-4 text-center">
                         <small class="text-muted">TOTAL A COBRAR</small>
-                        <h1 class="text-success fw-bold display-4">$<span id="total-val">0</span></h1>
+                        <h1 class="text-success fw-bold display-5">$<span id="total-val">0</span></h1>
                         <hr>
-                        <button id="btn-finalizar" class="btn btn-success w-100 py-3 fw-bold shadow" onclick="finalizarVenta()">REGISTRAR Y ENVIAR</button>
+                        <button id="btn-finalizar" class="btn btn-success w-100 py-3 fw-bold shadow" onclick="finalizarVenta()">REGISTRAR VENTA</button>
                     </div>
                 </div>
             </div>
@@ -89,8 +87,8 @@
         <!-- MÓDULO INVENTARIO -->
         <div id="p-inv" class="pos-panel" style="display:none;">
             <div class="card-g p-4">
-                <h5 class="fw-bold mb-4">Stock en Tiempo Real</h5>
-                <table class="table table-sm table-hover">
+                <h5 class="fw-bold mb-4">Existencias en Bodega</h5>
+                <table class="table table-hover table-sm">
                     <thead class="table-dark"><tr><th>EAN</th><th>Nombre</th><th>Stock</th><th>Precio</th></tr></thead>
                     <tbody id="inv-list"></tbody>
                 </table>
@@ -100,16 +98,13 @@
 </div>
 
 <script>
-    // CONFIGURACIÓN NATIVA
+    // CONFIGURACIÓN API DIRECTA
     const SURL = "https://tzseklsayxaldtqatwuq.supabase.co"; 
     const SKEY = "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5";
-    
-    // EmailJS (Configúralo aquí)
-    emailjs.init("TU_USER_ID_EMAILJS");
 
     let carrito = [], cajaId = "", tiempo = 18000, userMail = "";
 
-    // 1. INGRESO NATIVO (Súper rápido y sin bloqueos)
+    // 1. LOGIN NATIVO (Sustituye al SDK bloqueado)
     async function loginNativo() {
         const email = document.getElementById('log_user').value;
         const password = document.getElementById('log_pass').value;
@@ -117,7 +112,7 @@
         const btn = document.getElementById('btn-login');
 
         btn.disabled = true;
-        btn.innerText = "VERIFICANDO...";
+        btn.innerText = "Sincronizando...";
 
         try {
             const res = await fetch(`${SURL}/auth/v1/token?grant_type=password`, {
@@ -133,109 +128,108 @@
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
                 document.getElementById('disp-caja').innerText = cajaId;
-                document.getElementById('disp-user').innerText = "Cajero: " + email.split('@')[0].toUpperCase();
+                document.getElementById('disp-user').innerText = email.split('@')[0].toUpperCase();
                 
-                // AUDITORÍA DE INGRESO
-                fetch(`${SURL}/rest/v1/auditoria_logins`, {
-                    method: 'POST',
-                    headers: { 'apikey': SKEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-                    body: JSON.stringify({ cajero: email, caja: cajaId, fecha: new Date().toISOString() })
-                });
-
-                iniciarTimer();
+                iniciarReloj();
+                logAuditoria("INGRESO");
             } else {
-                alert("Acceso denegado: " + (data.error_description || "Datos incorrectos"));
+                alert("Error de acceso: Credenciales incorrectas.");
                 btn.disabled = false;
                 btn.innerText = "INICIAR TURNO 5H";
             }
         } catch (e) {
-            alert("Error de red: Revise su conexión.");
+            alert("Su red bloquea el sistema. Intente con otra conexión.");
             btn.disabled = false;
         }
     }
 
-    // 2. CONTADOR DE 5 HORAS
-    function iniciarTimer() {
-        const interval = setInterval(() => {
+    // 2. AUDITORÍA NATIVA
+    async function logAuditoria(accion) {
+        fetch(`${SURL}/rest/v1/auditoria_logins`, {
+            method: 'POST',
+            headers: { 'apikey': SKEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+            body: JSON.stringify({ cajero: userMail, caja: cajaId, fecha: new Date().toISOString(), accion: accion })
+        });
+    }
+
+    // 3. RELOJ DE TURNO
+    function iniciarReloj() {
+        setInterval(() => {
             if (tiempo > 0) {
                 tiempo--;
                 let h = Math.floor(tiempo / 3600), m = Math.floor((tiempo % 3600) / 60), s = tiempo % 60;
                 document.getElementById('timer-h').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            } else {
-                clearInterval(interval);
-                alert("TURNO VENCIDO. El sistema se bloqueará.");
-                location.reload();
-            }
+            } else { location.reload(); }
         }, 1000);
     }
 
-    // 3. ESCÁNER NATIVO (Busca productos sin librerías)
+    // 4. VENTAS NATIVAS (Busca productos sin librerías)
     async function handleScan(e) {
         if (e.key === 'Enter') {
             const ean = e.target.value.trim();
-            const res = await fetch(`${SURL}/rest/v1/productos?ean=eq.${ean}&select=*`, {
-                headers: { 'apikey': SKEY, 'Content-Type': 'application/json' }
-            });
-            const data = await res.json();
-            
-            if (data.length > 0) {
-                carrito.push(data[0]);
-                renderCart();
-            } else { alert("Producto no encontrado."); }
-            e.target.value = "";
+            try {
+                const res = await fetch(`${SURL}/rest/v1/productos?ean=eq.${ean}&select=*`, {
+                    headers: { 'apikey': SKEY, 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (data.length > 0) {
+                    carrito.push(data[0]);
+                    renderVenta();
+                } else { alert("Producto no encontrado."); }
+                e.target.value = "";
+            } catch (err) { alert("Error de red al escanear."); }
         }
     }
 
-    function renderCart() {
+    function renderVenta() {
         let total = 0;
         document.getElementById('cart-list').innerHTML = carrito.map((p, i) => {
             total += p.precio1;
-            return `<tr><td>${p.nombre}</td><td>1</td><td>$${p.precio1.toLocaleString()}</td><td><button class="btn btn-sm btn-danger" onclick="carrito.splice(${i},1);renderCart()"><i class="bi bi-trash"></i></button></td></tr>`;
+            return `<tr><td>${p.nombre}</td><td>1</td><td>$${p.precio1.toLocaleString()}</td>
+                    <td><button class="btn btn-sm btn-outline-danger" onclick="carrito.splice(${i},1);renderVenta()"><i class="bi bi-trash"></i></button></td></tr>`;
         }).join('');
         document.getElementById('total-val').innerText = total.toLocaleString();
     }
 
-    // 4. FINALIZAR VENTA CON DESCUENTO DE STOCK Y CORREO
+    // 5. REGISTRO Y DESCUENTO DE STOCK NATIVO
     async function finalizarVenta() {
-        if (carrito.length === 0) return alert("Carrito vacío");
+        if (carrito.length === 0) return alert("El carrito está vacío");
         const btn = document.getElementById('btn-finalizar');
         btn.disabled = true;
 
         try {
-            // Descuento de Stock por cada item
             for (let p of carrito) {
+                // PATCH nativo para restar stock
                 await fetch(`${SURL}/rest/v1/productos?ean=eq.${p.ean}`, {
                     method: 'PATCH',
                     headers: { 'apikey': SKEY, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ stock: p.stock - 1 })
                 });
             }
-
-            // Envío de Correo (EmailJS)
-            await emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-                caja: cajaId,
-                vendedor: userMail,
-                total: document.getElementById('total-val').innerText,
-                detalle: carrito.map(i => i.nombre).join(", ")
-            });
-
-            alert("✅ Venta registrada y reporte enviado.");
-            carrito = [];
-            renderCart();
+            alert("✅ Venta registrada y stock actualizado.");
+            carrito = []; renderVenta();
         } catch (e) { alert("Error al procesar: " + e.message); }
         finally { btn.disabled = false; }
     }
 
-    async function cargarInv() {
-        const res = await fetch(`${SURL}/rest/v1/productos?select=*`, { headers: { 'apikey': SKEY } });
+    async function cargarInventario() {
+        const res = await fetch(`${SURL}/rest/v1/productos?select=*&order=nombre.asc`, {
+            headers: { 'apikey': SKEY }
+        });
         const data = await res.json();
-        document.getElementById('inv-list').innerHTML = data.map(p => `<tr><td>${p.ean}</td><td>${p.nombre}</td><td>${p.stock}</td><td>$${p.precio1}</td></tr>`).join('');
+        document.getElementById('inv-list').innerHTML = data.map(p => `
+            <tr><td>${p.ean}</td><td>${p.nombre}</td>
+            <td class="${p.stock < 5 ? 'text-danger fw-bold' : ''}">${p.stock}</td>
+            <td>$${p.precio1.toLocaleString()}</td></tr>
+        `).join('');
     }
 
-    function showP(id, el) {
+    function showPanel(id, navId) {
         document.querySelectorAll('.pos-panel').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
         document.getElementById(id).style.display = 'block';
-        if (id === 'p-inv') cargarInv();
+        document.getElementById(navId).classList.add('active');
+        if (id === 'p-inv') cargarInventario();
     }
 </script>
 </body>
