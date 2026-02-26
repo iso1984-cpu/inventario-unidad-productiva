@@ -3,184 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUERRERO ERP - Remisionar v15</title>
+    <title>GUERRERO ERP - Panel Integral v15</title>
+    <!-- Bootstrap e Iconos -->
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net">
+    
     <style>
-        :root { --g-red: #e31e24; --g-emerald: #00a650; --g-dark: #0f172a; }
+        :root { --g-red: #e31e24; --g-dark: #0f172a; --g-emerald: #00a650; }
         body { background: #f1f5f9; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
 
-        /* PANTALLA DE ESPERA (LA QUE VES EN TU IMAGEN) */
-        #capa-espera { 
-            position: fixed; inset: 0; background: white; z-index: 5000; 
-            display: flex; align-items: center; justify-content: center; text-align: center;
-        }
-        .card-espera { padding: 40px; border-radius: 25px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); width: 450px; border: 1px solid #eee; }
-
-        /* PANEL OPERATIVO (ERP COMPLETO - SE ACTIVA AL DAR CLIC) */
-        #panel-erp { display: none; }
-        .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 25px; z-index: 1000; }
+        /* MENÚ LATERAL DESPLEGADO (SIDEBAR) */
+        .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 25px; z-index: 1000; box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
         main { margin-left: 260px; padding: 30px; min-height: 100vh; }
         
-        .nav-link { color: #94a3b8; cursor: pointer; padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; }
+        .nav-link { color: #94a3b8; cursor: pointer; padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; transition: 0.3s; }
+        .nav-link:hover { color: white; background: rgba(255,255,255,0.05); }
         .nav-link.active { background: var(--g-red); color: white; box-shadow: 0 4px 15px rgba(227, 30, 36, 0.3); }
-        .card-g { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 25px; }
         
-        .reloj-v { background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 12px; font-family: monospace; font-weight: bold; font-size: 1.6rem; }
+        /* TARJETAS DE MÓDULOS */
+        .card-g { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 25px; border: none; }
+        .reloj-v { background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 12px; font-family: monospace; font-weight: bold; font-size: 1.6rem; text-align: center; }
+        
+        .pos-panel { display: none; }
+        .pos-panel.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* BOTÓN REMISIONAR EN EL MENÚ */
+        .btn-remisionar { background-color: var(--g-emerald); color: white; font-weight: bold; border: none; border-radius: 12px; padding: 12px; transition: 0.3s; width: 100%; margin-bottom: 20px; }
+        .btn-remisionar:hover { background-color: #008a43; transform: scale(1.02); }
     </style>
 </head>
 <body>
 
-<!-- 1. PANTALLA DE ESPERA CON BOTÓN ESMERALDA -->
-<div id="capa-espera">
-    <div class="card-espera">
-        <h5 class="text-muted">Caja 1 Mañana</h5>
-        <p class="small fw-bold text-secondary text-uppercase">Turno Activo (5 Horas)</p>
-        
-        <div id="reloj-espera" class="display-2 fw-bold my-4 font-monospace">04:59:51</div>
-        
-        <p class="fw-bold text-muted mb-4">Cajero: SARITA.6421</p>
-
-        <div class="alert alert-light border-0 py-3 mb-4">
-            <p class="fw-bold text-dark mb-0 small">
-                "Les agradecemos por ser parte de nuestro equipo. <br> 
-                Que Dios los bendiga y que el turno sea un éxito."
-            </p>
+<div id="wrapper">
+    <!-- 1. MENÚ LATERAL SIEMPRE VISIBLE -->
+    <aside class="sidebar">
+        <div class="mb-5 text-center">
+            <h4 class="fw-bold text-white m-0">GUERRERO</h4>
+            <small class="text-danger fw-bold" style="letter-spacing: 2px;">SISTEMA 360°</small>
         </div>
-
-        <!-- BOTÓN REMISIONAR (SALTO AL ERP) -->
-        <button class="btn btn-success w-100 py-3 fw-bold shadow-lg fs-5 mb-3" style="background-color: var(--g-emerald); border: none;" onclick="abrirPanelERP()">
+        
+        <!-- BOTÓN REMISIONAR PRINCIPAL -->
+        <button class="btn-remisionar shadow" onclick="showP('p-ventas', this)">
             <i class="bi bi-cart-plus-fill me-2"></i> REMISIONAR
         </button>
 
-        <button class="btn btn-outline-secondary w-100 py-1 btn-sm" onclick="location.reload()">FINALIZAR TURNO</button>
-    </div>
-</div>
-
-<!-- 2. PANEL DEL ERP (VENTAS E INVENTARIO) -->
-<div id="panel-erp">
-    <aside class="sidebar">
-        <div class="mb-5 text-center"><h4 class="fw-bold text-white m-0">GUERRERO</h4><small class="text-danger fw-bold">SISTEMA 360°</small></div>
         <nav class="nav flex-column">
-            <div class="nav-link active" onclick="switchMod('mod-v', this)"><i class="bi bi-cart3 me-3"></i> Ventas</div>
-            <div class="nav-link" onclick="switchMod('mod-i', this)"><i class="bi bi-box-seam me-3"></i> Inventario</div>
+            <div class="nav-link" onclick="showP('p-ventas', this)"><i class="bi bi-cart3 me-3"></i> Ventas (Salidas)</div>
+            <div class="nav-link" onclick="showP('p-inv', this)"><i class="bi bi-box-seam me-3"></i> Inventario Real</div>
+            <div class="nav-link" onclick="showP('p-audit', this)"><i class="bi bi-shield-check me-3"></i> Auditoría Log</div>
         </nav>
-        <hr class="text-secondary my-5">
+
+        <hr class="text-secondary my-4">
+
+        <!-- INFO DE TURNO Y RELOJ -->
         <div class="text-center">
-            <div id="reloj-erp" class="reloj-v">04:59:51</div>
+            <div class="badge bg-danger mb-3 p-2 w-100 fs-6">CAJA 1 MAÑANA</div>
+            <div id="reloj-global" class="reloj-v">04:58:01</div>
             <p class="small fw-bold mt-3 text-light opacity-75">Cajero: SARITA.6421</p>
         </div>
+
+        <button class="btn btn-warning w-100 mt-4 fw-bold shadow-sm btn-sm" onclick="finalizarTurno()">CIERRE DE CAJA</button>
     </aside>
 
+    <!-- 2. CONTENIDO PRINCIPAL (MÓDULOS) -->
     <main>
-        <!-- MODULO VENTAS -->
-        <div id="mod-v" class="card-g">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold m-0"><i class="bi bi-upc-scan me-2 text-danger"></i> Nueva Remisión</h5>
-                <input type="text" id="scan-in" class="form-control w-50" placeholder="🔍 Escanee código EAN..." onkeypress="handleScan(event)">
-            </div>
-            <table class="table"><tbody id="v-list"></tbody></table>
-            <div class="text-end mt-4 pt-4 border-top">
-                <h3 class="fw-bold text-success">TOTAL: $<span id="t-val">0</span></h3>
-                <button class="btn btn-success px-5 py-3 fw-bold shadow" onclick="finalizarVenta()">REGISTRAR VENTA</button>
+        <!-- MENSAJE DE BENDICIÓN INICIAL -->
+        <div id="blessing-alert" class="alert alert-success border-0 shadow-sm mb-4 py-3 text-center">
+            <p class="fw-bold m-0 fs-5">"Les agradecemos por ser parte de nuestro equipo. Que Dios los bendiga y que el turno sea un éxito."</p>
+        </div>
+
+        <!-- MÓDULO VENTAS (DESPLEGADO POR DEFECTO) -->
+        <div id="p-ventas" class="pos-panel active">
+            <div class="card-g">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold m-0 text-danger"><i class="bi bi-upc-scan me-2"></i> Registro de Remisión de Salida</h5>
+                    <input type="text" id="ean-scanner" class="form-control w-50 border-danger" placeholder="🔍 Escanee código de barras..." onkeypress="handleScan(event)">
+                </div>
+                <div class="table-responsive" style="min-height: 250px;">
+                    <table class="table align-middle">
+                        <thead class="table-light"><tr><th>Producto</th><th>Cant</th><th>Subtotal</th><th>Acción</th></tr></thead>
+                        <tbody id="v-list"></tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-4 border-top">
+                    <h2 class="text-success fw-bold m-0">TOTAL: $<span id="t-val">0</span></h2>
+                    <button class="btn btn-success px-5 py-3 fw-bold shadow" onclick="registrarVenta()">REGISTRAR SALIDA</button>
+                </div>
             </div>
         </div>
 
-        <!-- MODULO INVENTARIO -->
-        <div id="mod-i" class="card-g" style="display:none;">
-            <h5 class="fw-bold mb-4">Stock en Tiempo Real</h5>
-            <table class="table table-hover table-sm">
-                <thead class="table-dark"><tr><th>EAN</th><th>Nombre</th><th>Stock</th><th>Precio</th></tr></thead>
-                <tbody id="i-list"></tbody>
-            </table>
+        <!-- MÓDULO INVENTARIO -->
+        <div id="p-inv" class="pos-panel">
+            <div class="card-g">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold m-0">Stock Maestro en Supabase</h5>
+                    <button class="btn btn-sm btn-outline-success" onclick="alert('Exportando Excel...')">📗 Excel</button>
+                </div>
+                <table class="table table-hover table-sm">
+                    <thead class="table-dark"><tr><th>EAN</th><th>Nombre</th><th>Stock</th><th>Precio</th></tr></thead>
+                    <tbody id="i-list"></tbody>
+                </table>
+            </div>
         </div>
     </main>
 </div>
 
 <script>
+    // CONFIGURACIÓN NATIVA (Tzseklsay...)
     const VAULT = {
         U: "https://tzseklsayxaldtqatwuq.supabase.co",
         K: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5"
     };
 
-    let seg = 17991; // 04:59:51
-    let carrito = [];
+    let segundos = 17881; // 04:58:01
+    let carrito = [], totalAcumulado = 0;
 
-    // FUNCIÓN DE SALTO Y AUDITORÍA EN TABLA 'usuarios'
-    async function abrirPanelERP() {
-        document.getElementById('capa-espera').style.display = 'none';
-        document.getElementById('panel-erp').style.display = 'block';
-        
-        // Registro corregido a tabla 'usuarios'
-        fetch(`${VAULT.U}/rest/v1/usuarios`, {
-            method: 'POST',
-            headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-            body: JSON.stringify({ 
-                email: 'sarita.6421@gmail.com', 
-                accion: 'REMISIONAR_TURNO',
-                fecha: new Date().toISOString()
-            })
-        });
-
-        // Sincronizar Relojes
+    // INICIAR RELOJ AL CARGAR
+    window.onload = () => {
         setInterval(() => {
-            if (seg > 0) {
-                seg--;
-                let h = Math.floor(seg / 3600), m = Math.floor((seg % 3600) / 60), s = seg % 60;
-                let fmt = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                document.getElementById('reloj-espera').innerText = fmt;
-                document.getElementById('reloj-erp').innerText = fmt;
+            if (segundos > 0) {
+                segundos--;
+                let h = Math.floor(segundos / 3600), m = Math.floor((segundos % 3600) / 60), s = segundos % 60;
+                document.getElementById('reloj-global').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
             }
         }, 1000);
-    }
+    };
 
     async function handleScan(e) {
         if (e.key === 'Enter') {
-            const ean = e.target.value.trim();
-            const res = await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${ean}&select=*`, { headers: { 'apikey': VAULT.K } });
+            const res = await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${e.target.value.trim()}&select=*`, { headers: { 'apikey': VAULT.K } });
             const data = await res.json();
             if (data.length > 0) {
                 carrito.push(data);
-                renderCarrito();
+                renderVenta();
             }
             e.target.value = "";
         }
     }
 
-    function renderCarrito() {
+    function renderVenta() {
         let t = 0;
         document.getElementById('v-list').innerHTML = carrito.map((p, i) => {
             t += p.precio1;
-            return `<tr><td>${p.nombre}</td><td>$${p.precio1.toLocaleString()}</td><td><button class="btn btn-sm text-danger" onclick="carrito.splice(${i},1);renderCarrito()"><i class="bi bi-trash"></i></button></td></tr>`;
+            return `<tr><td>${p.nombre}</td><td>1</td><td>$${p.precio1.toLocaleString()}</td><td><button class="btn btn-sm text-danger border-0" onclick="carrito.splice(${i},1);renderVenta()"><i class="bi bi-trash"></i></button></td></tr>`;
         }).join('');
         document.getElementById('t-val').innerText = t.toLocaleString();
     }
 
-    async function finalizarVenta() {
+    async function registrarVenta() {
         if(carrito.length === 0) return;
-        for (let p of carrito) {
-            await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${p.ean}`, {
-                method: 'PATCH',
-                headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ stock: p.stock - 1 })
+        const totalVenta = parseInt(document.getElementById('t-val').innerText.replace(/\D/g,''));
+        for (let item of carrito) {
+            await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${item.ean}`, {
+                method: 'PATCH', headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ stock: item.stock - 1 })
             });
         }
-        alert("✅ Venta Guardada");
-        carrito = []; renderCarrito();
+        totalAcumulado += totalVenta;
+        alert("✅ Remisión Exitosa. Stock actualizado.");
+        carrito = []; renderVenta();
     }
 
-    async function cargarStock() {
-        const res = await fetch(`${VAULT.U}/rest/v1/productos?select=*`, { headers: { 'apikey': VAULT.K } });
+    async function cargarInv() {
+        const res = await fetch(`${VAULT.U}/rest/v1/productos?select=*&order=nombre.asc`, { headers: { 'apikey': VAULT.K } });
         const data = await res.json();
-        document.getElementById('i-list').innerHTML = data.map(p => `<tr><td>${p.ean}</td><td>${p.nombre}</td><td>${p.stock}</td><td>$${p.precio1}</td></tr>`).join('');
+        document.getElementById('i-list').innerHTML = data.map(p => `<tr><td>${p.ean}</td><td>${p.nombre}</td><td>${p.stock}</td><td>$${p.precio1.toLocaleString()}</td></tr>`).join('');
     }
 
-    function switchMod(id, el) {
-        document.getElementById('mod-v').style.display = id === 'mod-v' ? 'block' : 'none';
-        document.getElementById('mod-i').style.display = id === 'mod-i' ? 'block' : 'none';
+    function showP(id, el) {
+        document.querySelectorAll('.pos-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        el.classList.add('active');
-        if(id === 'mod-i') cargarStock();
+        if(el.tagName === 'DIV') el.classList.add('active');
+        if(id === 'p-inv') cargarInv();
+    }
+
+    function finalizarTurno() {
+        if(confirm(`¿Realizar cierre de caja?\nTotal Ventas: $${totalAcumulado.toLocaleString()}`)) {
+            alert("Turno Finalizado. Enviando reporte...");
+            location.reload();
+        }
     }
 </script>
 </body>
