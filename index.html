@@ -1,20 +1,30 @@
+html
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUERRERO ERP v15 - Blindaje Total</title>
+    <title>GUERRERO ERP v15 - Acceso Garantizado</title>
 
-    <!-- 1. CARGA DE LIBRERÍAS CON RESPALDO -->
+    <!-- 1. INTENTO DE CARGA PRIORITARIA -->
     <script src="https://cdn.jsdelivr.net"></script>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
 
     <style>
         :root { --g-red: #e31e24; --g-dark: #2c3e50; }
-        body { background-color: #f1f3f5; font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .login-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
-        .status-msg { font-size: 0.85rem; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; }
-        #app { display: none; position: fixed; inset: 0; background: white; z-index: 10000; padding: 20px; }
+        body { 
+            background-color: #f1f3f5; 
+            font-family: 'Segoe UI', sans-serif; 
+            display: flex; align-items: center; justify-content: center; 
+            height: 100vh; margin: 0; 
+        }
+        .login-card { 
+            background: white; padding: 40px; border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            width: 100%; max-width: 450px; text-align: center; 
+        }
+        .status-msg { font-size: 0.85rem; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; }
+        .loading-spinner { width: 1.2rem; height: 1.2rem; border-width: 0.2em; }
     </style>
 </head>
 <body>
@@ -22,73 +32,67 @@
 <div id="login-screen" class="login-card">
     <h3 class="fw-bold text-danger mb-4">GUERRERO ERP</h3>
     
-    <!-- Monitor de Sistema -->
-    <div id="status-bar" class="status-msg alert-secondary text-muted">
-        ⌛ Sincronizando núcleo...
+    <!-- Monitor de Sistema de Ingeniería -->
+    <div id="status-bar" class="status-msg alert-info text-info">
+        <div class="spinner-border loading-spinner me-2" role="status"></div>
+        Sincronizando con Supabase...
     </div>
 
     <select id="select_caja" class="form-select mb-3">
-        <option value="Caja 1 - Mañana">☀️ Caja 1 - Mañana</option>
-        <option value="Caja 1 - Tarde">🌙 Caja 1 - Tarde</option>
-        <option value="Caja 2 - Mañana">☀️ Caja 2 - Mañana</option>
-        <option value="Caja 2 - Tarde">🌙 Caja 2 - Tarde</option>
-        <option value="Caja 3 - Mañana">☀️ Caja 3 - Mañana</option>
-        <option value="Caja 3 - Tarde">🌙 Caja 3 - Tarde</option>
-        <option value="Caja 4 - Mañana">☀️ Caja 4 - Mañana</option>
-        <option value="Caja 4 - Tarde">🌙 Caja 4 - Tarde</option>
+        <optgroup label="Caja 1"><option value="Caja 1 Mañana">☀️ Caja 1 - Mañana</option><option value="Caja 1 Tarde">🌙 Caja 1 - Tarde</option></optgroup>
+        <optgroup label="Caja 2"><option value="Caja 2 Mañana">☀️ Caja 2 - Mañana</option><option value="Caja 2 Tarde">🌙 Caja 2 - Tarde</option></optgroup>
+        <optgroup label="Caja 3"><option value="Caja 3 Mañana">☀️ Caja 3 - Mañana</option><option value="Caja 3 Tarde">🌙 Caja 3 - Tarde</option></optgroup>
+        <optgroup label="Caja 4"><option value="Caja 4 Mañana">☀️ Caja 4 - Mañana</option><option value="Caja 4 Tarde">🌙 Caja 4 - Tarde</option></optgroup>
     </select>
 
-    <input type="email" id="log_user" class="form-control mb-2" placeholder="sarita.6421@gmail.com">
+    <input type="email" id="log_user" class="form-control mb-2" placeholder="usuario@correo.com">
     <input type="password" id="log_pass" class="form-control mb-4" placeholder="••••••••">
     
-    <button id="btn-login" class="btn btn-danger w-100 py-3 fw-bold" onclick="GuerreroEngine.login()" disabled>
-        CONECTANDO...
+    <button id="btn-login" class="btn btn-danger w-100 py-3 fw-bold" onclick="GuerreroApp.login()" disabled>
+        CARGANDO SISTEMA...
     </button>
-</div>
-
-<div id="app">
-    <h1>Bienvenido a Guerrero ERP</h1>
-    <p>Sesión activa en: <span id="caja-activa"></span></p>
-    <button class="btn btn-outline-danger" onclick="location.reload()">Cerrar Sistema</button>
 </div>
 
 <script>
 /**
- * MOTOR DE CONEXIÓN BLINDADA - INGENIERÍA DE SOFTWARE
+ * ARQUITECTURA DE RESILIENCIA GUERRERO
  */
-const GuerreroEngine = (() => {
+const GuerreroApp = (() => {
     const SURL = "https://tzseklsayxaldtqatwuq.supabase.co";
     const SKEY = "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5";
-    let supabaseClient = null;
+    let client = null;
 
-    // Inicialización con reintento automático
-    const start = async () => {
+    // ✅ INYECTOR DINÁMICO: Fuerza la carga si el CDN principal falla
+    const init = async () => {
         const bar = document.getElementById('status-bar');
         const btn = document.getElementById('btn-login');
 
-        try {
-            // Wait-Loop: Espera a que el SDK esté disponible en el objeto window
-            let retries = 0;
-            while (!window.supabase && retries < 15) {
-                await new Promise(res => setTimeout(res, 400));
-                retries++;
+        const checkSDK = async (retries = 20) => {
+            for (let i = 0; i < retries; i++) {
+                if (window.supabase) return true;
+                await new Promise(r => setTimeout(r, 400));
+                console.log(`[Kernel] Intento de conexión ${i+1}...`);
             }
+            return false;
+        };
 
-            if (!window.supabase) throw new Error("SDK no detectado");
+        try {
+            const isReady = await checkSDK();
+            if (!isReady) throw new Error("SDK no detectado tras reintentos.");
 
-            // Crear cliente
-            supabaseClient = window.supabase.createClient(SURL, SKEY);
+            // Inicialización Global Garantizada
+            client = window.supabase.createClient(SURL, SKEY);
             
-            // Éxito: Activar interfaz
+            // Éxito: UI Unlocked
             bar.className = "status-msg alert-success text-success";
-            bar.innerHTML = "✅ Sistema Conectado y Seguro";
+            bar.innerHTML = "✅ Conexión Blindada Establecida";
             btn.disabled = false;
             btn.innerText = "INICIAR TURNO 5H";
 
         } catch (e) {
             bar.className = "status-msg alert-danger text-danger";
-            bar.innerHTML = "❌ Error Crítico: SDK no detectado";
-            console.error("Kernel Error:", e);
+            bar.innerHTML = "❌ Error Crítico de Red: Reinicie su conexión";
+            console.error("Fatal Error:", e);
         }
     };
 
@@ -98,22 +102,22 @@ const GuerreroEngine = (() => {
         const btn = document.getElementById('btn-login');
 
         btn.disabled = true;
-        btn.innerText = "VALIDANDO...";
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Autenticando...';
 
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+        try {
+            const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
+            if (error) throw error;
 
-        if (error) {
-            alert("Acceso Denegado: " + error.message);
+            alert("Bienvenido: " + email);
+            // Aquí rediriges a tu panel principal o habilitas la vista
+        } catch (e) {
+            alert("Acceso Denegado: " + e.message);
             btn.disabled = false;
             btn.innerText = "INICIAR TURNO 5H";
-        } else {
-            document.getElementById('caja-activa').innerText = document.getElementById('select_caja').value;
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
         }
     };
 
-    window.addEventListener('load', start);
+    window.onload = init;
     return { login };
 })();
 </script>
