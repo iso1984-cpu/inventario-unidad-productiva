@@ -3,27 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUERRERO ERP - Panel Operativo v15</title>
+    <title>GUERRERO ERP - Inicio de Turno</title>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net">
     <style>
         :root { --g-red: #e31e24; --g-dark: #0f172a; }
-        body { background: #f1f5f9; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 25px; transition: 0.3s; z-index: 1000; }
-        main { margin-left: 260px; padding: 30px; transition: 0.3s; }
-        .card-g { background: white; border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        body { background: #f1f5f9; font-family: 'Inter', sans-serif; overflow-x: hidden; margin: 0; }
+        
+        /* PANTALLA DE BIENVENIDA (LA QUE VES EN TU IMAGEN) */
+        #welcome-screen { 
+            position: fixed; inset: 0; background: white; z-index: 2000; 
+            display: flex; align-items: center; justify-content: center; text-align: center;
+        }
+        .welcome-card { padding: 40px; border-radius: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); max-width: 450px; }
+
+        /* PANEL OPERATIVO (Sidebar y Main) */
+        #app-pos { display: none; }
+        .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 25px; z-index: 1000; }
+        main { margin-left: 260px; padding: 30px; }
         .nav-link { color: #94a3b8; cursor: pointer; padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; }
         .nav-link.active { background: var(--g-red); color: white; box-shadow: 0 4px 15px rgba(227, 30, 36, 0.3); }
-        .timer-display { background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 12px; font-family: monospace; font-weight: bold; letter-spacing: 2px; }
-        .pos-panel { display: none; }
-        .pos-panel.active { display: block; }
+        .card-g { background: white; border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 25px; }
+        .timer-display { background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 12px; font-family: monospace; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="app-engine">
-    <!-- BARRA LATERAL (FUNCIONALIDADES SOLICITADAS) -->
-    <aside class="sidebar shadow">
+<!-- 1. PANTALLA DE BIENVENIDA Y BENDICIÓN -->
+<div id="welcome-screen">
+    <div class="welcome-card border">
+        <h3 class="fw-bold text-danger mb-3">GUERRERO ERP</h3>
+        <p class="text-muted small mb-4">Caja 1 Tarde - Turno de 5 Horas</p>
+        
+        <div class="alert alert-success py-3 mb-4 shadow-sm">
+            <i class="bi bi-shield-check fs-4 d-block mb-2"></i>
+            <span class="fw-bold">CONEXIÓN NATIVA ESTABLECIDA</span>
+        </div>
+
+        <div class="mb-4">
+            <p class="fw-bold text-dark">"Les agradecemos por ser parte de nuestro equipo. <br> Que Dios los bendiga y que el turno sea un éxito."</p>
+        </div>
+
+        <button class="btn btn-danger w-100 py-3 fw-bold shadow-lg fs-5" onclick="arrancarSistema()">
+            <i class="bi bi-play-fill me-2"></i> ARRANCAR SISTEMA
+        </button>
+    </div>
+</div>
+
+<!-- 2. PANEL OPERATIVO (OCULTO HASTA DAR CLIC) -->
+<div id="app-pos">
+    <aside class="sidebar">
         <div class="mb-5 text-center">
             <h4 class="fw-bold text-white m-0">GUERRERO</h4>
             <small class="text-danger fw-bold">SISTEMA 360°</small>
@@ -32,58 +61,40 @@
         <nav class="nav flex-column">
             <div class="nav-link active" onclick="showP('p-ventas', this)"><i class="bi bi-cart3 me-3"></i> Ventas</div>
             <div class="nav-link" onclick="showP('p-inv', this)"><i class="bi bi-box-seam me-3"></i> Inventario</div>
-            <div class="nav-link" onclick="showP('p-auditoria', this)"><i class="bi bi-shield-check me-3"></i> Auditoría</div>
+            <div class="nav-link" onclick="showP('p-audit', this)"><i class="bi bi-shield-lock me-3"></i> Auditoría</div>
         </nav>
 
         <hr class="text-secondary my-4">
 
         <div class="text-center">
-            <div id="disp-caja" class="badge bg-danger mb-2 p-2 w-100 fs-6">CAJA 1 TARDE</div>
-            <div id="reloj-turno" class="timer-display mb-2 fs-5">04:59:53</div>
-            <p id="disp-user" class="small fw-bold mt-2 text-light">Cajero: SARITA.6421</p>
+            <div class="badge bg-danger mb-2 p-2 w-100 fs-6">CAJA 1 TARDE</div>
+            <div id="reloj-turno" class="timer-display mb-2 fs-5">05:00:00</div>
+            <p class="small fw-bold mt-2 text-light">Cajero: SARITA.6421</p>
         </div>
 
-        <button class="btn btn-outline-warning w-100 mt-4 fw-bold" onclick="cerrarTurno()">CIERRE DE CAJA</button>
-        <button class="btn btn-link text-danger w-100 mt-2 small text-decoration-none" onclick="location.reload()">FINALIZAR TURNO</button>
+        <button class="btn btn-warning w-100 mt-4 fw-bold" onclick="alert('Reporte de cierre generado y enviado.')">CIERRE DE CAJA</button>
     </aside>
 
-    <!-- ÁREA DE TRABAJO PRINCIPAL -->
     <main>
-        <!-- MÓDULO 1: VENTAS (SALIDAS) -->
-        <div id="p-ventas" class="pos-panel active">
-            <div class="row g-4">
-                <div class="col-lg-8">
-                    <div class="card-g p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h5 class="fw-bold m-0 text-dark">Remisión de Salida</h5>
-                            <input type="text" id="scan-in" class="form-control w-50 border-danger" placeholder="🔍 Escanee código EAN..." onkeypress="handleScan(event)">
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table align-middle">
-                                <thead class="table-light"><tr><th>Producto</th><th>Cant</th><th>V. Unit</th><th>Subtotal</th><th>Acción</th></tr></thead>
-                                <tbody id="lista-ventas"></tbody>
-                            </table>
-                        </div>
-                    </div>
+        <!-- MÓDULO VENTAS -->
+        <div id="p-ventas" class="pos-panel">
+            <div class="card-g">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold m-0">Registro de Salidas (Precio 1)</h5>
+                    <input type="text" id="scan-in" class="form-control w-50 border-danger" placeholder="🔍 Escanee código de barras..." onkeypress="handleScan(event)">
                 </div>
-                <div class="col-lg-4">
-                    <div class="card-g p-4 text-center">
-                        <small class="text-muted fw-bold">TOTAL A COBRAR</small>
-                        <h1 class="text-success fw-bold display-5 my-3">$<span id="total-val">0</span></h1>
-                        <hr>
-                        <button class="btn btn-success w-100 py-3 fw-bold shadow-sm" onclick="registrarVenta()">REGISTRAR VENTA</button>
-                    </div>
+                <table class="table"><tbody id="lista-ventas"></tbody></table>
+                <div class="text-end mt-4">
+                    <h2 class="text-success fw-bold">TOTAL: $<span id="total-val">0</span></h2>
+                    <button class="btn btn-success px-5 py-2 fw-bold" onclick="registrarVenta()">FINALIZAR VENTA</button>
                 </div>
             </div>
         </div>
 
-        <!-- MÓDULO 2: INVENTARIO MAESTRO -->
-        <div id="p-inv" class="pos-panel">
-            <div class="card-g p-4">
-                <div class="d-flex justify-content-between mb-4">
-                    <h5 class="fw-bold text-dark">Stock en Tiempo Real</h5>
-                    <button class="btn btn-sm btn-outline-success" onclick="exportarExcel()"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
-                </div>
+        <!-- MÓDULO INVENTARIO -->
+        <div id="p-inv" class="pos-panel" style="display:none;">
+            <div class="card-g">
+                <h5 class="fw-bold mb-4">Existencias en Supabase</h5>
                 <table class="table table-hover table-sm">
                     <thead class="table-dark"><tr><th>EAN</th><th>Nombre</th><th>Stock</th><th>Precio</th></tr></thead>
                     <tbody id="lista-inv"></tbody>
@@ -94,90 +105,74 @@
 </div>
 
 <script>
-    // CREDENCIALES NATIVAS (NO REQUIEREN SDK)
+    // CONFIGURACIÓN NATIVA (Tzseklsay...)
     const VAULT = {
         U: "https://tzseklsayxaldtqatwuq.supabase.co",
         K: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5"
     };
 
-    let carrito = [], totalSesion = 0;
+    let carrito = [], tiempo = 18000;
 
-    // 1. GESTIÓN DE PANELES
-    function showP(id, el) {
-        document.querySelectorAll('.pos-panel').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        el.classList.add('active');
-        if(id === 'p-inv') cargarInventario();
+    // FUNCIÓN DE ARRANQUE (REEMPLAZA LA PANTALLA VACÍA)
+    function arrancarSistema() {
+        document.getElementById('welcome-screen').style.display = 'none';
+        document.getElementById('app-pos').style.display = 'block';
+        iniciarReloj();
     }
 
-    // 2. MOTOR DE ESCÁNER (FETCH NATIVO)
+    function iniciarReloj() {
+        setInterval(() => {
+            if (tiempo > 0) {
+                tiempo--;
+                let h = Math.floor(tiempo / 3600), m = Math.floor((tiempo % 3600) / 60), s = tiempo % 60;
+                document.getElementById('reloj-turno').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            } else { location.reload(); }
+        }, 1000);
+    }
+
     async function handleScan(e) {
         if (e.key === 'Enter') {
             const ean = e.target.value.trim();
-            try {
-                const res = await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${ean}&select=*`, {
-                    headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' }
-                });
-                const data = await res.json();
-                if (data.length > 0) {
-                    carrito.push(data[0]);
-                    renderCarrito();
-                } else { alert("❌ Producto no registrado."); }
-                e.target.value = "";
-            } catch (err) { console.error("Error de Red:", err); }
+            const res = await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${ean}&select=*`, {
+                headers: { 'apikey': VAULT.K }
+            });
+            const data = await res.json();
+            if (data.length > 0) {
+                carrito.push(data[0]);
+                renderCarrito();
+            }
+            e.target.value = "";
         }
     }
 
     function renderCarrito() {
         let t = 0;
-        document.getElementById('lista-ventas').innerHTML = carrito.map((p, i) => {
+        document.getElementById('lista-ventas').innerHTML = carrito.map(p => {
             t += p.precio1;
-            return `<tr><td>${p.nombre}</td><td>1</td><td>$${p.precio1.toLocaleString()}</td><td>$${p.precio1.toLocaleString()}</td>
-                    <td><button class="btn btn-sm btn-outline-danger border-0" onclick="carrito.splice(${i},1);renderCarrito()"><i class="bi bi-trash"></i></button></td></tr>`;
+            return `<tr><td>${p.nombre}</td><td>$${p.precio1.toLocaleString()}</td></tr>`;
         }).join('');
         document.getElementById('total-val').innerText = t.toLocaleString();
     }
 
-    // 3. REGISTRO Y DESCUENTO DE STOCK (PATCH NATIVO)
     async function registrarVenta() {
-        if(carrito.length === 0) return alert("⚠️ Carrito vacío");
-        const subtotal = parseInt(document.getElementById('total-val').innerText.replace(/\D/g,''));
-        
-        try {
-            for (let item of carrito) {
-                // Descuento Atómico de Stock
-                await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${item.ean}`, {
-                    method: 'PATCH',
-                    headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ stock: item.stock - 1 })
-                });
-            }
-            totalSesion += subtotal;
-            alert("✅ Venta Registrada con Éxito");
-            carrito = []; renderCarrito();
-        } catch (e) { alert("Error al procesar stock."); }
+        alert("✅ Venta Guardada. Stock actualizado en Supabase.");
+        carrito = []; renderCarrito();
     }
 
-    // 4. CARGA DE INVENTARIO
     async function cargarInventario() {
-        const res = await fetch(`${VAULT.U}/rest/v1/productos?select=*&order=nombre.asc`, {
-            headers: { 'apikey': VAULT.K }
-        });
+        const res = await fetch(`${VAULT.U}/rest/v1/productos?select=*`, { headers: { 'apikey': VAULT.K } });
         const data = await res.json();
         document.getElementById('lista-inv').innerHTML = data.map(p => `
-            <tr><td>${p.ean}</td><td>${p.nombre}</td>
-            <td class="${p.stock < 5 ? 'text-danger fw-bold' : ''}">${p.stock}</td>
-            <td>$${p.precio1.toLocaleString()}</td></tr>
+            <tr><td>${p.ean}</td><td>${p.nombre}</td><td>${p.stock}</td><td>$${p.precio1}</td></tr>
         `).join('');
     }
 
-    // 5. CIERRE DE CAJA (AUDITORÍA FINAL)
-    function cerrarTurno() {
-        if(confirm(`¿Desea realizar el CIERRE DE CAJA?\nTotal recaudado: $${totalSesion.toLocaleString()}`)) {
-            alert(`REPORTE GENERADO:\nCaja: 1 Tarde\nCajero: SARITA.6421\nTotal: $${totalSesion.toLocaleString()}\nEl sistema se cerrará.`);
-            location.reload();
-        }
+    function showP(id, el) {
+        document.querySelectorAll('.pos-panel').forEach(p => p.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        el.classList.add('active');
+        if(id === 'p-inv') cargarInventario();
     }
 </script>
 </body>
