@@ -11,19 +11,26 @@
         :root { --g-red: #e31e24; --g-dark: #0f172a; --g-emerald: #00a650; }
         body { background: #f1f5f9; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
         .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 25px; z-index: 1000; }
-        main { margin-left: 260px; padding: 30px; }
+        main { margin-left: 260px; padding: 30px; transition: 0.3s; }
         .nav-link { color: #94a3b8; cursor: pointer; padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; }
         .nav-link.active { background: var(--g-red); color: white; box-shadow: 0 4px 15px rgba(227, 30, 36, 0.3); }
         .card-g { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 25px; border: none; }
         .timer-h { background: #1e293b; color: #38bdf8; padding: 12px; border-radius: 12px; font-family: monospace; font-weight: bold; font-size: 1.8rem; text-align: center; }
+        
+        /* Control de Paneles */
         .pos-panel { display: none; }
-        .pos-panel.active { display: block; }
+        .pos-panel.active { display: block; animation: fadeIn 0.5s; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Estilo del aviso de inicio para que no bloquee */
+        #aviso-inicio { cursor: pointer; transition: 0.3s; }
+        #aviso-inicio:hover { transform: scale(1.01); }
     </style>
 </head>
 <body>
 
 <div id="wrapper">
-    <!-- BARRA LATERAL CON TUS PESTAÑAS -->
     <aside class="sidebar shadow">
         <div class="mb-5 text-center text-white">
             <h4 class="fw-bold m-0">GUERRERO</h4>
@@ -35,15 +42,15 @@
         </button>
 
         <nav class="nav flex-column">
-            <div class="nav-link active" onclick="showP('p-ventas', this)"><i class="bi bi-cart3 me-3"></i> Ventas (Salidas)</div>
-            <div class="nav-link" onclick="showP('p-inv', this)"><i class="bi bi-box-seam me-3"></i> Inventario (Productos)</div>
+            <div class="nav-link active" id="btn-v" onclick="showP('p-ventas', this)"><i class="bi bi-cart3 me-3"></i> Ventas (Salidas)</div>
+            <div class="nav-link" id="btn-i" onclick="showP('p-inv', this)"><i class="bi bi-box-seam me-3"></i> Inventario (Productos)</div>
         </nav>
 
         <hr class="text-secondary my-5">
 
         <div class="text-center">
             <div class="badge bg-danger mb-3 p-2 w-100 fs-6">CAJA 1 MAÑANA</div>
-            <div id="reloj-global" class="timer-h">04:59:59</div>
+            <div id="reloj-global" class="timer-h">05:00:00</div>
             <p class="small fw-bold mt-3 text-light opacity-75">Cajero: SARAH</p>
         </div>
 
@@ -51,18 +58,25 @@
     </aside>
 
     <main>
-        <div class="alert alert-success border-0 shadow-sm mb-4 py-3 text-center">
+        <!-- Aviso de inicio que se puede cerrar al hacer clic -->
+        <div id="aviso-inicio" class="alert alert-success border-0 shadow-sm mb-4 py-3 text-center" onclick="this.style.display='none'">
             <p class="fw-bold m-0 fs-5">"Les agradecemos por ser parte de nuestro equipo. Que Dios los bendiga y que el turno sea un éxito."</p>
+            <small class="text-muted">(Clic para minimizar este mensaje)</small>
         </div>
 
-        <!-- VENTAS (Conexión a tabla 'salidas') -->
+        <!-- PANEL VENTAS -->
         <div id="p-ventas" class="pos-panel active">
             <div class="card-g">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="fw-bold m-0 text-danger"><i class="bi bi-upc-scan me-2"></i> Nueva Remisión de Salida</h5>
-                    <input type="text" id="ean-scanner" class="form-control w-50 border-danger" placeholder="🔍 Escanee código..." onkeypress="handleScan(event)">
+                    <input type="text" id="ean-scanner" class="form-control w-50 border-danger" placeholder="🔍 Escanee código..." onkeypress="handleScan(event)" autofocus>
                 </div>
-                <table class="table"><tbody id="v-list"></tbody></table>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Producto</th><th>Precio</th><th>Acción</th></tr></thead>
+                        <tbody id="v-list"></tbody>
+                    </table>
+                </div>
                 <div class="text-end mt-4 pt-4 border-top">
                     <h3 class="fw-bold text-success">TOTAL: $<span id="t-val">0</span></h3>
                     <button class="btn btn-success px-5 py-3 fw-bold shadow" onclick="registrarVenta()">REGISTRAR SALIDA</button>
@@ -70,7 +84,7 @@
             </div>
         </div>
 
-        <!-- INVENTARIO (Conexión a tabla 'productos') -->
+        <!-- PANEL INVENTARIO -->
         <div id="p-inv" class="pos-panel">
             <div class="card-g">
                 <h5 class="fw-bold mb-4">Stock Real en Bodega</h5>
@@ -91,7 +105,20 @@
 
     let segundos = 18000, carrito = [], totalTurno = 0;
 
+    // Función silenciosa para evitar el error 404 sin bloquear el flujo
+    async function initAuditoria() {
+        fetch(`${VAULT.U}/rest/v1/auditoria_logins`, {
+            method: 'POST',
+            headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario: "SARAH", evento: "Inicio de Turno", fecha: new Date().toISOString() })
+        }).catch(e => console.warn("Tabla de auditoría no encontrada, pero el sistema continúa."));
+    }
+
     window.onload = () => {
+        initAuditoria();
+        // Foco automático al scanner para agilizar
+        document.getElementById('ean-scanner').focus();
+        
         setInterval(() => {
             if (segundos > 0) {
                 segundos--;
@@ -101,13 +128,20 @@
         }, 1000);
     };
 
-    // ESCÁNER (Busca en tabla 'productos')
     async function handleScan(e) {
         if (e.key === 'Enter') {
             const ean = e.target.value.trim();
-            const res = await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${ean}&select=*`, { headers: { 'apikey': VAULT.K } });
-            const data = await res.json();
-            if (data.length > 0) { carrito.push(data[0]); renderVenta(); }
+            if(!ean) return;
+            try {
+                const res = await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${ean}&select=*`, { headers: { 'apikey': VAULT.K } });
+                const data = await res.json();
+                if (data.length > 0) { 
+                    carrito.push(data[0]); 
+                    renderVenta(); 
+                } else {
+                    alert("Producto no encontrado");
+                }
+            } catch (err) { console.error("Error de red"); }
             e.target.value = "";
         }
     }
@@ -121,19 +155,16 @@
         document.getElementById('t-val').innerText = t.toLocaleString();
     }
 
-    // REGISTRO (Guarda en tabla 'salidas' y descuenta stock)
     async function registrarVenta() {
         if(carrito.length === 0) return;
         const totalVenta = parseInt(document.getElementById('t-val').innerText.replace(/\D/g,''));
         
         for (let item of carrito) {
-            // 1. Registrar salida
             await fetch(`${VAULT.U}/rest/v1/salidas`, {
                 method: 'POST',
                 headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ producto: item.nombre, monto: item.precio1, fecha: new Date().toISOString() })
             });
-            // 2. Descontar stock
             await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${item.ean}`, {
                 method: 'PATCH',
                 headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
@@ -141,7 +172,7 @@
             });
         }
         totalTurno += totalVenta;
-        alert("✅ Remisión Guardada en Tabla 'Salidas'");
+        alert("✅ Venta registrada correctamente");
         carrito = []; renderVenta();
     }
 
@@ -152,20 +183,25 @@
     }
 
     function showP(id, el) {
+        // Ocultar aviso al cambiar de pestaña para liberar espacio
+        document.getElementById('aviso-inicio').style.display = 'none';
+        
         document.querySelectorAll('.pos-panel').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        if(el.classList.contains('nav-link')) el.classList.add('active');
+        if(el) el.classList.add('active');
+        
         if(id === 'p-inv') cargarInv();
+        if(id === 'p-ventas') document.getElementById('ean-scanner').focus();
     }
 
     async function finalizarTurno() {
-        if(confirm(`¿Cerrar caja? Total: $${totalTurno.toLocaleString()}`)) {
-            // Registra cierre en 'movimientos_caja'
+        if(confirm(`¿Cerrar caja por $${totalTurno.toLocaleString()}?`)) {
             await fetch(`${VAULT.U}/rest/v1/movimientos_caja`, {
                 method: 'POST',
                 headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ monto: totalTurno, descripcion: 'CIERRE TURNO SARAH', fecha: new Date().toISOString() })
+                body: JSON.stringify({ tipo: "CIERRE", monto: totalTurno, cajero: "SARAH", fecha: new Date().toISOString() })
             });
             location.reload();
         }
