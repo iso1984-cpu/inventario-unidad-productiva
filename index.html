@@ -3,124 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GUERRERO ERP - Auditoría de Núcleo</title>
+    <title>GUERRERO ERP - Auditoría de Seguridad</title>
+    <!-- Solo CSS nativo para el diseño -->
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <style>
-        :root { --g-red: #e31e24; --g-dark: #1a1a1a; }
-        body { background: #f0f2f5; height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; padding: 20px; }
-        .secure-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); width: 100%; max-width: 440px; text-align: center; }
-        .audit-terminal { background: #000; color: #00ff00; font-family: monospace; font-size: 0.7rem; padding: 12px; border-radius: 12px; height: 90px; overflow-y: auto; text-align: left; margin-bottom: 20px; border: 1px solid #333; }
-        #app-main { display: none; width: 100%; max-width: 500px; text-align: center; background: white; padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
-        .timer-h { font-size: 3rem; font-weight: bold; font-family: 'Courier New', Courier, monospace; color: var(--g-dark); letter-spacing: 2px; }
+        :root { --g-red: #e31e24; --g-dark: #0f172a; }
+        body { background: #f1f5f9; height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; padding: 20px; font-family: 'Inter', system-ui, sans-serif; }
+        .secure-card { background: white; padding: 40px; border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); width: 100%; max-width: 440px; border: 1px solid #e2e8f0; }
+        .audit-console { background: #1e293b; color: #38bdf8; font-family: 'SF Mono', monospace; font-size: 0.75rem; padding: 15px; border-radius: 12px; height: 100px; overflow-y: auto; margin-bottom: 25px; border: 1px solid #334155; }
+        .form-control:focus { border-color: var(--g-red); box-shadow: 0 0 0 4px rgba(227, 30, 36, 0.1); }
+        #app-pos { display: none; }
     </style>
 </head>
 <body>
 
-<!-- PANTALLA DE ACCESO BLINDADO -->
-<div id="login-gate" class="secure-card">
-    <h3 class="fw-bold text-danger mb-4">GUERRERO ERP</h3>
+<div id="auth-gate" class="secure-card text-center">
+    <h3 class="fw-bold text-danger mb-1">GUERRERO ERP</h3>
+    <p class="text-muted small text-uppercase fw-bold mb-4" style="letter-spacing: 1px;">Security Layer v15.0</p>
     
-    <div id="audit-log" class="audit-terminal">
+    <!-- Monitor de Auditoría de Red (Handshake) -->
+    <div id="audit-log" class="audit-console text-start">
         > [INIT] Túnel de seguridad activo...<br>
         > [NET] Esperando credenciales nativas...
     </div>
 
-    <select id="select_caja" class="form-select mb-3 py-2">
-        <optgroup label="Caja 1"><option value="Caja 1 Mañana">☀️ Caja 1 - Mañana</option><option value="Caja 1 Tarde">🌙 Caja 1 - Tarde</option></optgroup>
-        <optgroup label="Caja 2"><option value="Caja 2 Mañana">☀️ Caja 2 - Mañana</option><option value="Caja 2 Tarde">🌙 Caja 2 - Tarde</option></optgroup>
-        <optgroup label="Caja 3"><option value="Caja 3 Mañana">☀️ Caja 3 - Mañana</option><option value="Caja 3 Tarde">🌙 Caja 3 - Tarde</option></optgroup>
-        <optgroup label="Caja 4"><option value="Caja 4 Mañana">☀️ Caja 4 - Mañana</option><option value="Caja 4 Tarde">🌙 Caja 4 - Tarde</option></optgroup>
-    </select>
-
-    <input type="email" id="auth_user" class="form-control mb-2 py-2" placeholder="usuario@correo.com">
-    <input type="password" id="auth_pass" class="form-control mb-4 py-2" placeholder="Contraseña">
-    
-    <button id="btn-gate" class="btn btn-danger w-100 py-3 fw-bold shadow" onclick="GuerreroEngine.authorize()">AUTENTICAR TURNO 5H</button>
-</div>
-
-<!-- PANEL TRAS INGRESO EXITOSO -->
-<div id="app-main">
-    <div class="badge bg-danger px-3 py-2 mb-3 fs-6" id="caja-display">---</div>
-    <h5 class="text-muted">TURNO ACTIVO (5 HORAS)</h5>
-    <div id="reloj" class="timer-h my-4">05:00:00</div>
-    <p id="user-display" class="fw-bold text-secondary">Cajero: ---</p>
-    <hr>
-    <div class="alert alert-success py-2 small">🛡️ Conexión Nativa Cifrada Establecida</div>
-    <button class="btn btn-outline-danger w-100 mt-4" onclick="location.reload()">FINALIZAR TURNO</button>
+    <div id="auth-fields">
+        <select id="sel-caja" class="form-select mb-3 py-2">
+            <optgroup label="Caja 1"><option value="Caja 1 Mañana">☀️ Caja 1 - Mañana</option><option value="Caja 1 Tarde">🌙 Caja 1 - Tarde</option></optgroup>
+            <optgroup label="Caja 2"><option value="Caja 2 Mañana">☀️ Caja 2 - Mañana</option><option value="Caja 2 Tarde">🌙 Caja 2 - Tarde</option></optgroup>
+            <optgroup label="Caja 3"><option value="Caja 3 Mañana">☀️ Caja 3 - Mañana</option><option value="Caja 3 Tarde">🌙 Caja 3 - Tarde</option></optgroup>
+            <optgroup label="Caja 4"><option value="Caja 4 Mañana">☀️ Caja 4 - Mañana</option><option value="Caja 4 Tarde">🌙 Caja 4 - Tarde</option></optgroup>
+        </select>
+        <input type="email" id="u-mail" class="form-control mb-2" placeholder="usuario@seguro.com">
+        <input type="password" id="u-pass" class="form-control mb-4" placeholder="Contraseña">
+        <button id="btn-gate" class="btn btn-danger w-100 py-3 fw-bold shadow" onclick="SecurityEngine.authorize()">AUTENTICAR TURNO 5H</button>
+    </div>
 </div>
 
 <script>
 /**
- * GUERRERO ENGINE - CIBERSEGURIDAD V15
+ * SECURITY ENGINE - ARQUITECTURA ZERO-SDK
  */
-const GuerreroEngine = (() => {
+const SecurityEngine = (() => {
+    // Endpoints Directos de Ingeniería
     const VAULT = {
         U: "https://tzseklsayxaldtqatwuq.supabase.co",
         K: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5"
     };
 
-    let sRestantes = 18000; // 5 Horas
-
-    const log = (m) => { document.getElementById('audit-log').innerHTML += `> ${m}<br>`; };
+    const log = (msg) => {
+        const audit = document.getElementById('audit-log');
+        audit.innerHTML += `> ${msg}<br>`;
+        audit.scrollTop = audit.scrollHeight;
+    };
 
     const authorize = async () => {
-        const user = document.getElementById('auth_user').value;
-        const pass = document.getElementById('auth_pass').value;
-        const caja = document.getElementById('select_caja').value;
+        const email = document.getElementById('u-mail').value;
+        const pass = document.getElementById('u-pass').value;
+        const caja = document.getElementById('sel-caja').value;
         const btn = document.getElementById('btn-gate');
 
         btn.disabled = true;
-        btn.innerText = "VALIDANDO...";
-        log(`[AUTH] Solicitando acceso para ${user}...`);
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> VALIDANDO...';
+        log(`[AUTH] Solicitando token de acceso para ${email}...`);
 
         try {
-            // PETICIÓN NATIVA: Salta el bloqueo del operador al no usar SDK externo
+            // PETICIÓN NATIVA: Salta bloqueos de red al no usar scripts externos
             const res = await fetch(`${VAULT.U}/auth/v1/token?grant_type=password`, {
                 method: 'POST',
                 headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: user, password: pass })
+                body: JSON.stringify({ email: email, password: pass })
             });
 
             const data = await res.json();
 
             if (res.ok) {
-                log(`[SUCCESS] Sesión auditada correctamente.`);
+                log(`[SUCCESS] Sesión autorizada. Registrando auditoría...`);
                 
-                // Registro de Auditoría Silencioso
-                fetch(`${VAULT.U}/rest/v1/auditoria_logins`, {
+                // Registro de Auditoría de Ciberseguridad
+                await fetch(`${VAULT.U}/rest/v1/auditoria_logins`, {
                     method: 'POST',
-                    headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cajero: user, caja: caja, fecha: new Date().toISOString() })
+                    headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+                    body: JSON.stringify({
+                        cajero: email,
+                        caja: caja,
+                        evento: "LOGIN_SUCCESS",
+                        timestamp: new Date().toISOString()
+                    })
                 });
 
-                document.getElementById('login-gate').style.display = 'none';
-                document.getElementById('app-main').style.display = 'block';
-                document.getElementById('caja-display').innerText = caja;
-                document.getElementById('user-display').innerText = "Cajero: " + user.split('@')[0].toUpperCase();
-                
-                iniciarConteo();
+                document.getElementById('auth-gate').innerHTML = "<h4 class='text-center p-4 fw-bold'>DESBLOQUEANDO ENTORNO...</h4>";
+                setTimeout(() => { alert("Bienvenido al Núcleo de Guerrero ERP"); }, 500);
             } else {
-                log(`[REJECT] Credenciales inválidas.`);
-                alert("Acceso Denegado: Verifique sus datos.");
+                log(`[REJECT] Acceso Denegado.`);
+                alert("ERROR DE SEGURIDAD: Credenciales inválidas o red bloqueada.");
                 btn.disabled = false;
                 btn.innerText = "AUTENTICAR TURNO 5H";
             }
         } catch (e) {
-            log(`[FATAL] Error de túnel: Red Bloqueada.`);
-            alert("Error Crítico de Red. Intente con otra conexión.");
+            log(`[FATAL] Error de túnel: Handshake fallido.`);
+            alert("ALERTA DE RED: Su conexión TLS está siendo bloqueada por el operador.");
             btn.disabled = false;
         }
-    };
-
-    const iniciarConteo = () => {
-        const r = document.getElementById('reloj');
-        setInterval(() => {
-            if (sRestantes > 0) {
-                sRestantes--;
-                let h = Math.floor(sRestantes / 3600), m = Math.floor((sRestantes % 3600) / 60), s = sRestantes % 60;
-                r.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            } else { location.reload(); }
-        }, 1000);
     };
 
     return { authorize };
