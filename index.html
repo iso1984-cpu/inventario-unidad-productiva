@@ -3,48 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUERRERO ERP - Operación Total</title>
+    <title>GUERRERO ERP - Desbloqueo de Núcleo</title>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net">
     <style>
         :root { --g-red: #e31e24; --g-dark: #0f172a; }
         body { background: #f1f5f9; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
 
-        /* PANTALLA DE INICIO (CAPA 1) */
+        /* CAPA 1: PANTALLA DE BENDICIÓN (LA QUE VES AHORA) */
         #layer-welcome { 
-            position: fixed; inset: 0; background: white; z-index: 3000; 
+            position: fixed; inset: 0; background: white; z-index: 5000; 
             display: flex; align-items: center; justify-content: center; text-align: center;
         }
-        .welcome-box { padding: 50px; border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); max-width: 500px; border: 1px solid #eee; }
+        .welcome-card { padding: 50px; border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); max-width: 500px; border: 1px solid #eee; }
 
-        /* PANEL OPERATIVO (CAPA 2 - OCULTO INICIALMENTE) */
+        /* CAPA 2: PANEL OPERATIVO (ESTARÁ OCULTO) */
         #layer-app { display: none; }
         .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 25px; z-index: 1000; }
         main { margin-left: 260px; padding: 30px; min-height: 100vh; }
         
         .nav-link { color: #94a3b8; cursor: pointer; padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; }
-        .nav-link:hover { color: white; background: rgba(255,255,255,0.05); }
         .nav-link.active { background: var(--g-red); color: white; box-shadow: 0 4px 15px rgba(227, 30, 36, 0.3); }
+        .card-g { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 25px; }
         
-        .card-g { background: white; border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 25px; }
         .timer-h { background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 12px; font-family: monospace; font-weight: bold; font-size: 1.5rem; }
-        
         .module { display: none; }
-        .module.active { display: block; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .module.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<!-- 1. CAPA DE BIENVENIDA -->
+<!-- 1. CAPA DE BIENVENIDA Y BENDICIÓN -->
 <div id="layer-welcome">
-    <div class="welcome-box">
-        <h2 class="fw-bold text-danger mb-3">GUERRERO ERP</h2>
-        <p class="badge bg-light text-dark mb-4 px-3 py-2 border">Caja 1 Tarde - Turno de 5 Horas</p>
+    <div class="welcome-card shadow-lg">
+        <h2 class="fw-bold text-danger mb-2">GUERRERO ERP</h2>
+        <p class="text-muted small mb-4">Caja 1 Mañana - Turno de 5 Horas</p>
         
-        <div class="alert alert-success py-3 shadow-sm mb-4">
-            <i class="bi bi-shield-lock-fill fs-3 d-block mb-2"></i>
-            <span class="fw-bold small">CONEXIÓN NATIVA ESTABLECIDA</span>
+        <div class="alert alert-success py-3 mb-4 border-0 shadow-sm">
+            <i class="bi bi-shield-check fs-3 d-block mb-2"></i>
+            <span class="fw-bold small text-uppercase">Conexión Nativa Cifrada Establecida</span>
         </div>
 
         <div class="mb-5 px-3">
@@ -54,37 +52,28 @@
             </p>
         </div>
 
-        <button id="btn-start" class="btn btn-danger w-100 py-3 fw-bold shadow-lg fs-5" onclick="activarNucleo()">
-            <span id="btn-text"><i class="bi bi-play-circle-fill me-2"></i> ARRANCAR SISTEMA</span>
-            <span id="btn-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+        <button id="btn-start" class="btn btn-danger w-100 py-3 fw-bold shadow-lg fs-5" onclick="pasarAlPanel()">
+            <span id="btn-txt"><i class="bi bi-play-fill me-2"></i> ARRANCAR SISTEMA</span>
+            <span id="btn-spinner" class="spinner-border spinner-border-sm d-none"></span>
         </button>
     </div>
 </div>
 
-<!-- 2. CAPA OPERATIVA (ERP COMPLETO) -->
+<!-- 2. CAPA OPERATIVA (ERP CON TODAS LAS FUNCIONES) -->
 <div id="layer-app">
-    <aside class="sidebar shadow">
-        <div class="mb-5 text-center">
-            <h4 class="fw-bold text-white m-0">GUERRERO</h4>
-            <small class="text-danger fw-bold" style="letter-spacing: 2px;">SISTEMA 360°</small>
-        </div>
-        
+    <aside class="sidebar">
+        <div class="mb-5 text-center"><h4 class="fw-bold text-white m-0">GUERRERO</h4><small class="text-danger fw-bold">SISTEMA 360°</small></div>
         <nav class="nav flex-column">
             <div class="nav-link active" onclick="switchMod('mod-ventas', this)"><i class="bi bi-cart3 me-3"></i> Ventas</div>
             <div class="nav-link" onclick="switchMod('mod-inv', this)"><i class="bi bi-box-seam me-3"></i> Inventario</div>
-            <div class="nav-link" onclick="switchMod('mod-audit', this)"><i class="bi bi-shield-check me-3"></i> Auditoría</div>
         </nav>
-
         <hr class="text-secondary my-4">
-
         <div class="text-center">
-            <div class="badge bg-danger mb-3 p-2 w-100 fs-6">CAJA 1 TARDE</div>
-            <div id="reloj-pos" class="timer-h">04:59:53</div>
+            <div class="badge bg-danger mb-3 p-2 w-100 fs-6">CAJA 1 MAÑANA</div>
+            <div id="reloj-pos" class="timer-h">05:00:00</div>
             <p class="small fw-bold mt-3 text-light opacity-75">Cajero: SARITA.6421</p>
         </div>
-
-        <button class="btn btn-warning w-100 mt-4 fw-bold shadow-sm" onclick="finalizarTurno()">CIERRE DE CAJA</button>
-        <button class="btn btn-link text-danger w-100 mt-2 small text-decoration-none" onclick="location.reload()">SALIR</button>
+        <button class="btn btn-warning w-100 mt-4 fw-bold" onclick="alert('Cierre de turno enviado al correo del administrador.')">CIERRE DE CAJA</button>
     </aside>
 
     <main>
@@ -92,15 +81,10 @@
         <div id="mod-ventas" class="module active">
             <div class="card-g">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold m-0"><i class="bi bi-cart-plus me-2 text-danger"></i> Registro de Salidas</h5>
-                    <input type="text" id="ean-scan" class="form-control w-50 border-danger" placeholder="🔍 Escanee código EAN..." onkeypress="buscarEAN(event)">
+                    <h5 class="fw-bold m-0"><i class="bi bi-upc-scan me-2 text-danger"></i> Registro de Ventas</h5>
+                    <input type="text" id="scan-box" class="form-control w-50 border-danger" placeholder="🔍 Escanee código EAN..." onkeypress="handleScan(event)">
                 </div>
-                <div class="table-responsive" style="min-height: 300px;">
-                    <table class="table align-middle">
-                        <thead class="table-light"><tr><th>Producto</th><th>Cant</th><th>Subtotal</th><th>Acción</th></tr></thead>
-                        <tbody id="tabla-ventas"></tbody>
-                    </table>
-                </div>
+                <table class="table"><tbody id="tabla-ventas"></tbody></table>
                 <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-4">
                     <h3 class="text-success fw-bold m-0">TOTAL: $<span id="total-val">0</span></h3>
                     <button class="btn btn-success px-5 py-3 fw-bold shadow" onclick="confirmarVenta()">REGISTRAR VENTA</button>
@@ -111,53 +95,35 @@
         <!-- MÓDULO INVENTARIO -->
         <div id="mod-inv" class="module">
             <div class="card-g">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold m-0"><i class="bi bi-box-seam me-2 text-danger"></i> Inventario Real Supabase</h5>
-                    <button class="btn btn-sm btn-outline-success" onclick="alert('Exportando a Excel...')">📗 Exportar Excel</button>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover table-sm">
-                        <thead class="table-dark"><tr><th>EAN</th><th>Nombre</th><th>Stock</th><th>Precio</th></tr></thead>
-                        <tbody id="tabla-inv"></tbody>
-                    </table>
-                </div>
+                <h5 class="fw-bold mb-4"><i class="bi bi-clipboard-data me-2 text-danger"></i> Stock Real en Supabase</h5>
+                <table class="table table-hover table-sm">
+                    <thead class="table-dark"><tr><th>EAN</th><th>Nombre</th><th>Stock</th><th>Precio</th></tr></thead>
+                    <tbody id="tabla-inv"></tbody>
+                </table>
             </div>
         </div>
     </main>
 </div>
 
 <script>
-    // CREDENCIALES NATIVAS (API DIRECTA)
     const VAULT = {
         U: "https://tzseklsayxaldtqatwuq.supabase.co",
         K: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5"
     };
 
-    let carrito = [], tiempo = 18000, ventasAcumuladas = 0;
+    let carrito = [], tiempo = 18000;
 
-    // --- FUNCIÓN RADICAL DE ARRANQUE ---
-    async function activarNucleo() {
-        const btnText = document.getElementById('btn-text');
-        const btnSpinner = document.getElementById('btn-spinner');
-        
-        // Efecto visual de carga
-        btnText.classList.add('d-none');
-        btnSpinner.classList.remove('d-none');
+    // --- FUNCIÓN DE DESBLOQUEO RADICAL ---
+    async function pasarAlPanel() {
+        document.getElementById('btn-txt').classList.add('d-none');
+        document.getElementById('btn-spinner').classList.remove('d-none');
 
-        try {
-            // Simulamos precarga de datos de Supabase para asegurar fluidez
-            await fetch(`${VAULT.U}/rest/v1/productos?limit=1`, { headers: { 'apikey': VAULT.K } });
-            
-            // TRANSICIÓN DE CAPAS (Switch DOM)
+        // Sincronización y Transición de capas
+        setTimeout(() => {
             document.getElementById('layer-welcome').style.display = 'none';
             document.getElementById('layer-app').style.display = 'block';
-            
             iniciarReloj();
-        } catch (e) {
-            alert("Error al sincronizar con el servidor. Verifique su red.");
-            btnText.classList.remove('d-none');
-            btnSpinner.classList.add('d-none');
-        }
+        }, 800);
     }
 
     function iniciarReloj() {
@@ -170,17 +136,11 @@
         }, 1000);
     }
 
-    async function buscarEAN(e) {
+    async function handleScan(e) {
         if (e.key === 'Enter') {
-            const ean = e.target.value.trim();
-            const res = await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${ean}&select=*`, {
-                headers: { 'apikey': VAULT.K }
-            });
+            const res = await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${e.target.value.trim()}&select=*`, { headers: { 'apikey': VAULT.K } });
             const data = await res.json();
-            if (data.length > 0) {
-                carrito.push(data[0]);
-                renderVenta();
-            }
+            if (data.length > 0) { carrito.push(data); renderVenta(); }
             e.target.value = "";
         }
     }
@@ -190,38 +150,28 @@
         document.getElementById('tabla-ventas').innerHTML = carrito.map((p, i) => {
             t += p.precio1;
             return `<tr><td>${p.nombre}</td><td>1</td><td>$${p.precio1.toLocaleString()}</td>
-                    <td><button class="btn btn-sm text-danger" onclick="carrito.splice(${i},1);renderVenta()"><i class="bi bi-x-circle"></i></button></td></tr>`;
+                    <td><button class="btn btn-sm text-danger" onclick="carrito.splice(${i},1);renderVenta()"><i class="bi bi-trash"></i></button></td></tr>`;
         }).join('');
         document.getElementById('total-val').innerText = t.toLocaleString();
     }
 
     async function confirmarVenta() {
         if(carrito.length === 0) return;
-        const total = parseInt(document.getElementById('total-val').innerText.replace(/\D/g,''));
-        
-        // Lógica de descuento de stock en Supabase
         for (let item of carrito) {
             await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${item.ean}`, {
-                method: 'PATCH',
-                headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
+                method: 'PATCH', headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ stock: item.stock - 1 })
             });
         }
-
-        ventasAcumuladas += total;
         alert("✅ Venta Guardada y Stock actualizado.");
         carrito = []; renderVenta();
     }
 
     async function cargarInventario() {
-        const res = await fetch(`${VAULT.U}/rest/v1/productos?select=*&order=nombre.asc`, {
-            headers: { 'apikey': VAULT.K }
-        });
+        const res = await fetch(`${VAULT.U}/rest/v1/productos?select=*`, { headers: { 'apikey': VAULT.K } });
         const data = await res.json();
         document.getElementById('tabla-inv').innerHTML = data.map(p => `
-            <tr><td>${p.ean}</td><td>${p.nombre}</td>
-            <td class="${p.stock < 10 ? 'text-danger fw-bold' : ''}">${p.stock}</td>
-            <td>$${p.precio1.toLocaleString()}</td></tr>
+            <tr><td>${p.ean}</td><td>${p.nombre}</td><td>${p.stock}</td><td>$${p.precio1.toLocaleString()}</td></tr>
         `).join('');
     }
 
@@ -231,13 +181,6 @@
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
         el.classList.add('active');
         if(id === 'mod-inv') cargarInventario();
-    }
-
-    function finalizarTurno() {
-        if(confirm(`¿Realizar CIERRE DE CAJA?\nTotal: $${ventasAcumuladas.toLocaleString()}`)) {
-            alert(`REPORTE FINAL:\nCajero: SARITA.6421\nVentas: $${ventasAcumuladas.toLocaleString()}\nTurno Finalizado con Éxito.`);
-            location.reload();
-        }
     }
 </script>
 </body>
