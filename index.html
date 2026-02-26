@@ -4,22 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GUERRERO ERP - Control de Caja Total</title>
+    <!-- Bootstrap CSS para estilos rápidos -->
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net">
     
     <style>
         :root { --g-red: #e31e24; --g-orange: #f7941d; --g-green: #00a650; --g-dark: #1a1a1a; --g-light: #f1f5f9; }
         body { background: var(--g-light); font-family: 'Inter', sans-serif; overflow: hidden; margin: 0; }
+        
+        /* Pantalla de Login */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--g-dark); z-index: 3000; display: flex; align-items: center; justify-content: center; color: white; }
+        .login-card { background: white; padding: 40px; border-radius: 20px; width: 400px; color: var(--g-dark); text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .terminal-box { background: black; color: #0f0; font-family: monospace; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left; font-size: 0.8rem; }
 
+        /* Dashboard Principal */
         .sidebar { background: var(--g-dark); color: white; width: 240px; height: 100vh; position: fixed; z-index: 100; }
         .nav-link { color: #94a3b8; padding: 12px 20px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-left: 4px solid transparent; }
         .nav-link.active { background: rgba(227, 30, 36, 0.1); color: white; border-left-color: var(--g-red); }
-
-        main { margin-left: 240px; padding: 20px; height: 100vh; display: flex; flex-direction: column; }
+        main { margin-left: 240px; padding: 20px; height: 100vh; display: none; flex-direction: column; }
+        
         .pos-container { display: flex; gap: 20px; flex-grow: 1; overflow: hidden; }
         .product-section { flex: 3; background: white; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .summary-section { flex: 1; background: white; border-radius: 15px; padding: 20px; border-left: 5px solid var(--g-red); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-
+        
         .item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 40px; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid #f1f1f1; font-size: 0.9rem; }
         .item-row input { border: 1px solid #ddd; border-radius: 5px; text-align: center; width: 100%; }
 
@@ -27,17 +34,35 @@
         .pay-card { background: white; padding: 30px; border-radius: 20px; width: 480px; }
         .pay-btn { padding: 12px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; text-align: center; font-weight: 600; transition: 0.2s; }
         .pay-btn.selected { background: var(--g-red); color: white; border-color: var(--g-red); }
-        
         .pago-detalles { background: #f8fafc; padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid #e2e8f0; display: none; }
         .cambio-text { font-size: 1.1rem; font-weight: bold; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
 
+<!-- PANTALLA DE ACCESO -->
+<div id="login-screen">
+    <div class="login-card">
+        <h4 class="fw-bold mb-3">GUERRERO ERP</h4>
+        <div class="terminal-box">
+            > [INIT] Túnel de seguridad activo...<br>
+            > [NET] Esperando credenciales nativas...
+        </div>
+        <select class="form-select mb-2" id="caja-select">
+            <option>Caja 1 - Mañana</option>
+            <option>Caja 2 - Tarde</option>
+        </select>
+        <input type="email" id="user-email" class="form-control mb-2" placeholder="usuario@correo.com">
+        <input type="password" id="user-pass" class="form-control mb-3" placeholder="Contraseña">
+        <button class="btn btn-danger w-100 py-2 fw-bold" onclick="autenticar()">AUTENTICAR TURNO 5H</button>
+    </div>
+</div>
+
+<!-- INTERFAZ PRINCIPAL -->
 <div class="sidebar">
     <div class="p-4 text-center border-bottom border-secondary mb-3">
         <h5 class="fw-bold m-0 text-white">GUERRERO <span class="text-danger">ERP</span></h5>
-        <small class="text-secondary">Terminal: Sarah</small>
+        <small class="text-secondary" id="display-cajero">Terminal: Sarah</small>
     </div>
     <div class="nav flex-column">
         <div class="nav-link active"><i class="bi bi-cart-plus"></i> Nueva Venta</div>
@@ -45,10 +70,10 @@
     </div>
 </div>
 
-<main>
+<main id="app-main">
     <div class="d-flex justify-content-between mb-3">
         <h5 class="fw-bold m-0">Remisión de Salida</h5>
-        <div id="reloj-global" class="fw-bold text-danger">05:00:00</div>
+        <div id="reloj-global" class="fw-bold text-danger">00:00:00</div>
     </div>
 
     <div class="pos-container">
@@ -57,12 +82,10 @@
                 <input type="text" id="main-search" class="form-control form-control-lg border-danger" placeholder="🔍 Nombre o Código de Barras..." oninput="buscar(this.value)" autofocus autocomplete="off">
                 <div id="search-results" class="list-group position-absolute w-100 shadow-lg z-3" style="display:none"></div>
             </div>
-
             <div id="cart-list" class="overflow-auto flex-grow-1">
                 <div class="text-center text-muted mt-5" id="empty-msg"><i class="bi bi-upc-scan fs-1 opacity-25"></i><p>Escanee productos para vender</p></div>
             </div>
         </div>
-
         <div class="summary-section text-center">
             <p class="text-secondary small mb-1">TOTAL VENTA</p>
             <h1 class="fw-bold text-danger mb-4">$<span id="total-val">0</span></h1>
@@ -72,7 +95,7 @@
     </div>
 </main>
 
-<!-- MODAL DE PAGO CON CONTROL DE CAJA -->
+<!-- MODAL DE PAGO -->
 <div id="payment-modal">
     <div class="pay-card">
         <h5 class="fw-bold mb-4 text-center">Forma de Pago</h5>
@@ -82,7 +105,6 @@
             <div class="col-6"><div class="pay-btn" onclick="setPago('BANCO_B', this)">Bancolombia</div></div>
             <div class="col-6"><div class="pay-btn" onclick="setPago('COMBINADO', this)">Combinado</div></div>
         </div>
-
         <div id="pago-panel" class="pago-detalles">
             <div id="efectivo-box">
                 <label class="small fw-bold">RECIBIDO:</label>
@@ -94,7 +116,6 @@
             </div>
             <div id="cambio-display" class="cambio-text">CAMBIO: $0</div>
         </div>
-
         <button id="final-btn" class="btn btn-success btn-lg w-100 mt-4 fw-bold" onclick="finalizarVenta()" disabled>FINALIZAR</button>
         <button class="btn btn-link text-secondary w-100 mt-2" onclick="cerrarPago()">Cerrar</button>
     </div>
@@ -103,9 +124,34 @@
 <script>
     const VAULT = { U: "https://tzseklsayxaldtqatwuq.supabase.co", K: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5" };
     let cart = [], metodo = '', total = 0;
-    let cajaTurno = { EFECTIVO: 0, NEQUI: 0, BANCO_B: 0 };
     const headers = { 'apikey': VAULT.K, 'Authorization': `Bearer ${VAULT.K}`, 'Content-Type': 'application/json' };
 
+    // --- AUTENTICACIÓN Y AUDITORÍA ---
+    async function autenticar() {
+        const user = document.getElementById('user-email').value;
+        const pass = document.getElementById('user-pass').value;
+        
+        try {
+            const res = await fetch(`${VAULT.U}/rest/v1/usuarios?usuario=eq.${user}&password=eq.${pass}&select=*`, { headers });
+            const data = await res.json();
+
+            if (data.length > 0) {
+                // Registrar Auditoría (Soluciona el error 404)
+                await fetch(`${VAULT.U}/rest/v1/auditoria_logins`, {
+                    method: 'POST', headers,
+                    body: JSON.stringify({ usuario: user, evento: "INICIO_SESION", fecha: new Date().toISOString() })
+                });
+
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-main').style.display = 'flex';
+                document.getElementById('display-cajero').innerText = "Cajero: " + user;
+            } else {
+                alert("Credenciales incorrectas");
+            }
+        } catch (e) { alert("Error de conexión con el servidor"); }
+    }
+
+    // --- LÓGICA DE VENTA ---
     async function buscar(val) {
         const resList = document.getElementById('search-results');
         if (val.length < 2) { resList.style.display = "none"; return; }
@@ -167,46 +213,29 @@
     async function finalizarVenta() {
         const efec = metodo === 'COMBINADO' ? parseInt(document.getElementById('c-efec').value) : (metodo === 'EFECTIVO' ? total : 0);
         const trans = total - efec;
-        const subMetodo = metodo === 'COMBINADO' ? 'NEQUI' : metodo;
-
-        const ticket = confirm(`¿Imprimir Ticket 80mm?\nMétodo: ${metodo}`);
-        if(ticket) {
-            const win = window.open('', '_blank');
-            win.document.write(`<html><body onload="window.print();window.close()"><div style="width:80mm; font-family:monospace; text-align:center;">
-                <h3>SUPER TIENDA GUERRERO</h3>NIT: 1061782017<hr>
-                ${cart.map(p => `<div>${p.qty}x ${p.nombre.substring(0,18)} $${p.price*p.qty}</div>`).join('')}
-                <hr>TOTAL: $${total}<br>PAGO: ${metodo}<br>------------------<br>¡Gracias por su compra!</div></body></html>`);
-        }
-
         try {
             for (let item of cart) {
-                await fetch(`${VAULT.U}/rest/v1/salidas`, { method: 'POST', headers, body: JSON.stringify({ 
-                    producto: item.nombre, monto: item.price * item.qty, metodo_pago: metodo, efec_recibido: efec, trans_recibida: trans, fecha: new Date().toISOString() 
-                }) });
+                await fetch(`${VAULT.U}/rest/v1/salidas`, { method: 'POST', headers, body: JSON.stringify({ producto: item.nombre, monto: item.price * item.qty, metodo_pago: metodo, efec_recibido: efec, trans_recibida: trans, fecha: new Date().toISOString() }) });
                 await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${item.ean}`, { method: 'PATCH', headers, body: JSON.stringify({ stock: item.stock - item.qty }) });
             }
             location.reload();
-        } catch (e) { alert("Error"); }
+        } catch (e) { alert("Error al procesar"); }
     }
 
     async function finalizarTurno() {
         const res = await fetch(`${VAULT.U}/rest/v1/salidas?select=metodo_pago,efec_recibido,trans_recibida`, { headers });
         const data = await res.json();
-        let totalE = 0, totalN = 0, totalB = 0;
+        let e = 0, n = 0, b = 0;
         data.forEach(v => {
-            totalE += (v.efec_recibido || 0);
-            if(v.metodo_pago === 'NEQUI') totalN += v.trans_recibida;
-            if(v.metodo_pago === 'BANCO_B') totalB += v.trans_recibida;
+            e += (v.efec_recibido || 0);
+            if(v.metodo_pago === 'NEQUI') n += (v.trans_recibida || 0);
+            if(v.metodo_pago === 'BANCO_B') b += (v.trans_recibida || 0);
         });
-        
         const win = window.open('', '_blank');
-        win.document.write(`<html><body onload="window.print();window.close()" style="width:80mm; font-family:monospace; text-align:center;">
-            <h3>CIERRE DE CAJA - GUERRERO</h3>Cajera: SARAH<hr>
-            EFECTIVO: $${totalE}<br>NEQUI: $${totalN}<br>BANCOLOMBIA: $${totalB}<hr>
-            <b>TOTAL CAJA: $${totalE + totalN + totalB}</b><br><br>Firma:__________________</body></html>`);
+        win.document.write(`<html><body onload="window.print();window.close()" style="width:80mm; font-family:monospace; text-align:center;"><h3>CIERRE DE CAJA</h3>EFECTIVO: $${e}<br>NEQUI: $${n}<br>BANCOLOMBIA: $${b}<hr><b>TOTAL: $${e+n+b}</b></body></html>`);
     }
 
-    setInterval(() => { /* Lógica de reloj aquí */ }, 1000);
+    setInterval(() => { document.getElementById('reloj-global').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
 </html>
