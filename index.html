@@ -3,26 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUERRERO ERP v15 - Seguridad Radical</title>
+    <title>GUERRERO ERP v15 - Sistema Pro</title>
 
-    <!-- 1. CARGA DE LIBRERÍAS (CDNs FIABLES) -->
+    <!-- LIBRERÍAS CRÍTICAS -->
     <script src="https://cdn.jsdelivr.net"></script>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net">
     <script src="https://cdn.sheetjs.com"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net"></script>
 
     <style>
         :root { --g-red: #e31e24; --g-dark: #2c3e50; }
         body { background-color: #f1f3f5; font-family: 'Inter', sans-serif; }
-        .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 20px 0; z-index: 1000; }
-        .nav-link { color: #adb5bd; padding: 12px 25px; display: flex; align-items: center; cursor: pointer; border-left: 4px solid transparent; text-decoration: none; }
-        .nav-link.active { color: white; background: rgba(255,255,255,0.1); border-left-color: var(--g-red); }
+        .login-screen { position: fixed; inset: 0; background: #f1f3f5; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 20px 0; }
         main { margin-left: 260px; padding: 30px; }
         .pos-panel { display: none; }
         .pos-panel.active { display: block; }
-        .card-g { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .login-screen { position: fixed; inset: 0; background: #f1f3f5; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        #btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -30,54 +27,63 @@
 <!-- PANTALLA DE ACCESO -->
 <div id="login-screen" class="login-screen">
     <div class="card shadow-lg p-5 text-center" style="width: 450px; border-radius: 20px;">
-        <h3 class="fw-bold text-danger mb-4">GUERRERO ERP</h3>
+        <h3 class="fw-bold text-danger mb-2">GUERRERO ERP</h3>
+        <p id="status-carga" class="small text-muted mb-4">⏳ Cargando base de datos...</p>
+        
         <select id="select_caja" class="form-select mb-3">
             <optgroup label="Caja 1"><option value="Caja 1 Mañana">☀️ Caja 1 - Mañana</option><option value="Caja 1 Tarde">🌙 Caja 1 - Tarde</option></optgroup>
             <optgroup label="Caja 2"><option value="Caja 2 Mañana">☀️ Caja 2 - Mañana</option><option value="Caja 2 Tarde">🌙 Caja 2 - Tarde</option></optgroup>
             <optgroup label="Caja 3"><option value="Caja 3 Mañana">☀️ Caja 3 - Mañana</option><option value="Caja 3 Tarde">🌙 Caja 3 - Tarde</option></optgroup>
             <optgroup label="Caja 4"><option value="Caja 4 Mañana">☀️ Caja 4 - Mañana</option><option value="Caja 4 Tarde">🌙 Caja 4 - Tarde</option></optgroup>
         </select>
-        <input type="email" id="log_user" class="form-control mb-2" placeholder="usuario@correo.com">
+
+        <input type="email" id="log_user" class="form-control mb-2" placeholder="sarita.6421@gmail.com">
         <input type="password" id="log_pass" class="form-control mb-4" placeholder="Contraseña">
-        <button id="btn-login" class="btn btn-danger w-100 py-3 fw-bold" onclick="login()">INICIAR TURNO 5H</button>
+        
+        <!-- Botón deshabilitado inicialmente -->
+        <button id="btn-login" class="btn btn-danger w-100 py-3 fw-bold" onclick="login()" disabled>
+            INICIAR TURNO 5H
+        </button>
     </div>
 </div>
 
 <div id="app" style="display:none;">
     <aside class="sidebar shadow">
-        <div class="px-4 mb-5 text-center text-white"><h4>GUERRERO</h4><small class="text-danger">Sistema 360°</small></div>
-        <nav>
-            <div class="nav-link active" onclick="showPanel('p-ventas', this)"><i class="bi bi-cart3 me-2"></i> Ventas</div>
-            <div class="nav-link" onclick="showPanel('p-inventario', this)"><i class="bi bi-list-check me-2"></i> Inventario</div>
+        <div class="px-4 mb-5 text-center text-white"><h4>GUERRERO</h4></div>
+        <nav class="nav flex-column">
+            <a class="nav-link text-white active" href="#" onclick="showPanel('p-ventas')">🛒 Ventas</a>
+            <a class="nav-link text-white" href="#" onclick="showPanel('p-inventario')">📦 Inventario</a>
         </nav>
         <hr>
         <div class="text-center px-3">
             <div id="label-caja" class="badge bg-danger mb-2 p-2 w-100">---</div>
             <div id="timer-h" class="bg-dark text-white p-2 rounded mb-2 fw-bold">05:00:00</div>
-            <p id="cajero-name" class="small text-light">---</p>
         </div>
     </aside>
 
     <main>
         <div id="p-ventas" class="pos-panel active">
-            <div class="row g-4">
-                <div class="col-lg-8">
-                    <div class="card-g p-4">
-                        <input type="text" id="scan_out" class="form-control mb-4" placeholder="🔍 Escanear producto..." onkeypress="handleVenta(event)">
-                        <table class="table"><tbody id="list-v"></tbody></table>
-                    </div>
+            <div class="row">
+                <div class="col-8">
+                    <input type="text" id="scan_out" class="form-control mb-3" placeholder="Escanear producto..." onkeypress="handleVenta(event)">
+                    <table class="table bg-white rounded shadow-sm">
+                        <thead><tr><th>Producto</th><th>Precio</th><th>Acción</th></tr></thead>
+                        <tbody id="list-v"></tbody>
+                    </table>
                 </div>
-                <div class="col-lg-4">
-                    <div class="card-g p-4 text-center">
-                        <h1 class="text-success">$<span id="total-v">0</span></h1>
-                        <button id="btn-finalizar" class="btn btn-success w-100 py-3" onclick="finalizarVenta()">REGISTRAR Y ENVIAR</button>
+                <div class="col-4 text-center">
+                    <div class="card p-4 shadow-sm">
+                        <h5>TOTAL</h5>
+                        <h2 class="text-success fw-bold">$<span id="total-v">0</span></h2>
+                        <button class="btn btn-success w-100 py-3 mt-3" onclick="finalizarVenta()">REGISTRAR VENTA</button>
                     </div>
                 </div>
             </div>
         </div>
+        
         <div id="p-inventario" class="pos-panel">
-            <div class="card-g p-4">
-                <button class="btn btn-sm btn-success mb-3" onclick="exportarExcel()">Exportar Excel</button>
+            <div class="card p-4 shadow-sm">
+                <button class="btn btn-outline-success btn-sm mb-3" onclick="exportarExcel()">Exportar Excel</button>
                 <table class="table table-sm"><tbody id="list-inv"></tbody></table>
             </div>
         </div>
@@ -85,36 +91,39 @@
 </div>
 
 <script>
-    // ✅ 1. INICIALIZACIÓN GLOBAL SEGURA
     const SURL = "https://tzseklsayxaldtqatwuq.supabase.co";
     const SKEY = "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5";
-    let supabase, carrito = [], cajaId = "", tiempo = 18000, currentUser = "";
+    let supabase, carrito = [], cajaId = "", tiempo = 18000;
 
+    // ✅ CORRECCIÓN RADICAL: Activar botón solo cuando Supabase esté listo
     window.onload = () => {
         try {
-            supabase = window.supabase.createClient(SURL, SKEY);
-            emailjs.init("TU_USER_ID_EMAILJS");
-            console.log("✅ Sistema inicializado correctamente.");
-        } catch (e) { console.error("Error cargando Supabase:", e); }
+            if (window.supabase) {
+                supabase = window.supabase.createClient(SURL, SKEY);
+                document.getElementById('btn-login').disabled = false;
+                document.getElementById('status-carga').innerText = "✅ Sistema Listo";
+                document.getElementById('status-carga').className = "small text-success mb-4";
+            }
+        } catch (e) {
+            document.getElementById('status-carga').innerText = "❌ Error de conexión";
+        }
     };
 
-    // ✅ 2. LOGIN SEGURO (Resuelve el ReferenceError de cajaId)
     async function login() {
-        cajaId = document.getElementById('select_caja').value; // Declarado antes del uso
+        cajaId = document.getElementById('select_caja').value;
         const email = document.getElementById('log_user').value;
         const pass = document.getElementById('log_pass').value;
 
-        if(!supabase) return alert("El sistema aún está cargando...");
-
         const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-        if (error) return alert("Acceso fallido: " + error.message);
-
-        currentUser = email;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
-        document.getElementById('label-caja').innerText = cajaId;
-        document.getElementById('cajero-name').innerText = email;
-        iniciarContador();
+        
+        if (error) {
+            alert("Error: " + error.message);
+        } else {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            document.getElementById('label-caja').innerText = cajaId;
+            iniciarContador();
+        }
     }
 
     function iniciarContador() {
@@ -123,7 +132,7 @@
                 tiempo--;
                 let h = Math.floor(tiempo/3600), m = Math.floor((tiempo%3600)/60), s = tiempo%60;
                 document.getElementById('timer-h').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            } else { document.getElementById('app').innerHTML = "<h1 class='text-center mt-5'>TURNO VENCIDO - CIERRE SESIÓN</h1>"; }
+            }
         }, 1000);
     }
 
@@ -139,33 +148,21 @@
         let total = 0;
         document.getElementById('list-v').innerHTML = carrito.map((p, i) => {
             total += p.precio1;
-            return `<tr><td>${p.nombre}</td><td>$${p.precio1.toLocaleString()}</td><td><button class="btn btn-sm btn-danger" onclick="carrito.splice(${i},1);renderCarrito()">X</button></td></tr>`;
+            return `<tr><td>${p.nombre}</td><td>$${p.precio1}</td><td><button class="btn btn-sm btn-danger" onclick="carrito.splice(${i},1);renderCarrito()">X</button></td></tr>`;
         }).join('');
-        document.getElementById('total-v').innerText = total.toLocaleString();
+        document.getElementById('total-v').innerText = total;
     }
 
     async function finalizarVenta() {
-        if(carrito.length === 0) return;
-        const btn = document.getElementById('btn-finalizar');
-        btn.disabled = true;
-
-        try {
-            // Descuento de Stock y Envío EmailJS
-            for (let p of carrito) {
-                const { data } = await supabase.from('productos').select('stock').eq('ean', p.ean).single();
-                await supabase.from('productos').update({ stock: data.stock - 1 }).eq('ean', p.ean);
-            }
-            await emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-                caja: cajaId, vendedor: currentUser, total: document.getElementById('total-v').innerText,
-                detalle: carrito.map(p => p.nombre).join(', '), to_email: "admin@correo.com"
-            });
-            alert("Venta registrada y reporte enviado.");
-            carrito = []; renderCarrito();
-        } catch (e) { alert("Error: " + e.message); }
-        finally { btn.disabled = false; }
+        for (let p of carrito) {
+            const { data } = await supabase.from('productos').select('stock').eq('ean', p.ean).single();
+            await supabase.from('productos').update({ stock: data.stock - 1 }).eq('ean', p.ean);
+        }
+        alert("Venta registrada.");
+        carrito = []; renderCarrito();
     }
 
-    function showPanel(id, el) {
+    function showPanel(id) {
         document.querySelectorAll('.pos-panel').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     }
