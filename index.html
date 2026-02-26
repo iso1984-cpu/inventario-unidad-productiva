@@ -3,21 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUERRERO ERP v15 - Sistema Integral 360°</title>
+    <title>GUERRERO ERP v15 - Sistema Integral Final</title>
 
-    <!-- LIBRERÍAS PRIORITARIAS -->
+    <!-- 1. LIBRERÍA SUPABASE (Versión UMD para carga inmediata) -->
     <script src="https://cdn.jsdelivr.net"></script>
-    <link href="https://cdn.jsdelivr.net" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net">
-    <script src="https://cdn.sheetjs.com"></script>
-
-    <!-- INICIALIZACIÓN INMEDIATA -->
+    
+    <!-- 2. INICIALIZACIÓN EN EL ENCABEZADO (Soluciona el error de la imagen) -->
     <script>
         const SURL = "https://tzseklsayxaldtqatwuq.supabase.co"; 
         const SKEY = "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5";
+        
+        // Se usa window.supabase para asegurar que esté definido globalmente
         const supabase = window.supabase.createClient(SURL, SKEY);
         const ring = new Audio('https://assets.mixkit.co');
+        
+        console.log("✅ Guerrero ERP: Conexión Supabase Inicializada.");
     </script>
+
+    <!-- Bootstrap e Iconos -->
+    <link href="https://cdn.jsdelivr.net" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net">
+    <script src="https://cdn.sheetjs.com"></script>
 
     <style>
         :root { --g-red: #e31e24; --g-dark: #2c3e50; --g-green: #00a650; --g-purple: #6f42c1; }
@@ -29,14 +35,13 @@
         .pos-panel { display: none; }
         .pos-panel.active { display: block; }
         .card-g { background: white; border-radius: 12px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .total-banner { background: var(--g-purple); color: white; padding: 20px; border-radius: 8px; text-align: center; }
         .login-screen { position: fixed; inset: 0; background: #f1f3f5; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .alert-turno { display: none; background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; font-weight: bold; border: 1px solid #ffeeba; }
+        .timer-badge { background: #333; color: #fff; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<!-- LOGIN Y SELECCIÓN DE CAJA -->
+<!-- PANTALLA DE ACCESO (VISTA EN TU IMAGEN) -->
 <div id="login-screen" class="login-screen">
     <div class="card shadow-lg p-5 text-center" style="width: 420px; border-radius: 20px;">
         <h3 class="fw-bold text-danger mb-4">GUERRERO ERP</h3>
@@ -46,9 +51,9 @@
             <option value="Caja 3">🛒 Caja 3 - Bodega</option>
             <option value="Caja 4">🛒 Caja 4 - Domicilios</option>
         </select>
-        <input type="email" id="log_user" class="form-control mb-2" placeholder="Usuario">
+        <input type="email" id="log_user" class="form-control mb-2" placeholder="sarita.6421@gmail.com">
         <input type="password" id="log_pass" class="form-control mb-4" placeholder="Contraseña">
-        <button class="btn btn-danger w-100 py-3 fw-bold" onclick="login()">INICIAR TURNO 5H</button>
+        <button class="btn btn-danger w-100 py-3 fw-bold shadow" onclick="login()">INICIAR TURNO 5H</button>
     </div>
 </div>
 
@@ -56,92 +61,61 @@
     <aside class="sidebar shadow">
         <div class="px-4 mb-5 text-center"><h4 class="fw-bold text-white m-0">GUERRERO</h4><small class="text-danger">Sistema 360°</small></div>
         <nav>
-            <div class="nav-link active" onclick="showPanel('p-ventas', this)"><i class="bi bi-cart3 me-2"></i> Ventas</div>
-            <div class="nav-link" onclick="showPanel('p-compras', this)"><i class="bi bi-box-seam me-2"></i> Compras</div>
-            <div class="nav-link" onclick="showPanel('p-caja', this)"><i class="bi bi-cash-stack me-2"></i> Mov. Caja</div>
-            <div class="nav-link" onclick="showPanel('p-domicilios', this)"><i class="bi bi-truck me-2"></i> Domicilios</div>
-            <div class="nav-link" onclick="showPanel('p-inventario', this)"><i class="bi bi-list-check me-2"></i> Inventario</div>
+            <div class="nav-link active" onclick="showPanel('p-ventas', this)"><i class="bi bi-cart3 me-2"></i> Ventas (Salidas)</div>
+            <div class="nav-link" onclick="showPanel('p-compras', this)"><i class="bi bi-box-seam me-2"></i> Compras (Entradas)</div>
+            <div class="nav-link" onclick="showPanel('p-domicilios', this)"><i class="bi bi-truck me-2"></i> Domicilios Online</div>
+            <div class="nav-link" onclick="showPanel('p-inventario', this)"><i class="bi bi-list-check me-2"></i> Inventario Maestro</div>
         </nav>
-        <div class="mt-5 px-4 text-center">
-            <div class="badge bg-danger mb-2" id="label-caja">---</div>
-            <div id="timer-h" class="text-muted small">05:00:00</div>
+        <hr>
+        <div class="text-center">
+            <div class="badge bg-danger mb-2 px-3 py-2" id="label-caja">---</div>
+            <div id="timer-h" class="timer-badge mb-2">05:00:00</div>
             <p id="cajero-name" class="small fw-bold mt-2">Cajero: ---</p>
         </div>
+        <button class="btn btn-link text-danger w-100 mt-4 small" onclick="location.reload()">Finalizar Turno</button>
     </aside>
 
     <main>
-        <div id="alert-turno" class="alert-turno text-center mb-4">⚠️ ATENCIÓN: El turno de 5 horas ha vencido. Realice cierre de caja.</div>
+        <div id="alert-turno" class="alert alert-warning text-center fw-bold mb-4" style="display:none;">⚠️ ATENCIÓN: El turno de 5 horas ha vencido. Realice el cierre.</div>
 
-        <!-- PANEL: VENTAS MULTI-CLIENTE -->
+        <!-- MÓDULO VENTAS -->
         <div id="p-ventas" class="pos-panel active">
             <div class="row g-4">
                 <div class="col-lg-8">
                     <div class="card-g p-4">
                         <div class="d-flex justify-content-between mb-4">
-                            <h5 class="fw-bold">Remisión de Salida (Precio 1)</h5>
-                            <input type="text" id="scan_out" class="form-control w-50 shadow-sm" placeholder="🔍 Escanear EAN..." onkeypress="handleVenta(event)">
+                            <h5 class="fw-bold">Nueva Venta (Precio 1)</h5>
+                            <input type="text" id="scan_out" class="form-control w-50" placeholder="🔍 Escanear producto..." onkeypress="handleVenta(event)">
                         </div>
-                        <table class="table align-middle"><tbody id="list-v"></tbody></table>
+                        <table class="table align-middle">
+                            <thead class="table-light"><tr><th>Producto</th><th>Cant</th><th>V. Unit</th><th>Subtotal</th></tr></thead>
+                            <tbody id="list-v"></tbody>
+                        </table>
                     </div>
                 </div>
                 <div class="col-lg-4">
-                    <div class="card-g p-4 shadow-sm">
-                        <div class="total-banner mb-4"><small>TOTAL VENTA</small><h2 class="fw-bold m-0">$<span id="total-v">0</span></h2></div>
-                        <label class="small fw-bold">EFECTIVO</label><input type="number" id="p-efe" class="form-control mb-2" oninput="calcVueltas()">
-                        <label class="small fw-bold">BRE-B / DIGITAL</label><input type="number" id="p-dig" class="form-control mb-3" oninput="calcVueltas()">
-                        <div class="d-flex justify-content-between border-top pt-2"><span class="fw-bold">VUELTAS:</span><span class="text-danger fw-bold">$<span id="vueltas-v">0</span></span></div>
-                        <button class="btn btn-success w-100 py-3 mt-4 fw-bold shadow" onclick="finalizarVenta()">✅ REGISTRAR VENTA MIXTA</button>
+                    <div class="card-g p-4 text-center">
+                        <small class="text-muted">TOTAL A COBRAR</small>
+                        <h1 class="text-success fw-bold display-4">$<span id="total-v">0</span></h1>
+                        <hr>
+                        <input type="number" id="p-efe" class="form-control mb-2" placeholder="Pago Efectivo" oninput="calcVueltas()">
+                        <input type="number" id="p-dig" class="form-control mb-3" placeholder="Pago Digital" oninput="calcVueltas()">
+                        <div class="d-flex justify-content-between"><span class="fw-bold">CAMBIO:</span><span class="text-danger fw-bold fs-4">$<span id="vueltas-v">0</span></span></div>
+                        <button class="btn btn-success w-100 py-3 mt-4 fw-bold shadow" onclick="finalizarVenta()">REGISTRAR VENTA</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- PANEL: COMPRAS MANUALES -->
-        <div id="p-compras" class="pos-panel">
-            <div class="card-g p-4 mx-auto" style="max-width: 700px;">
-                <h4 class="fw-bold mb-4 text-center">Remisión de Entrada</h4>
-                <div class="row g-3">
-                    <div class="col-12"><label class="small fw-bold">Código EAN</label><input type="text" id="in-ean" class="form-control"></div>
-                    <div class="col-6"><label class="small fw-bold">Cantidad</label><input type="number" id="in-cant" class="form-control"></div>
-                    <div class="col-6"><label class="small fw-bold">Valor Total Factura</label><input type="number" id="in-val" class="form-control"></div>
-                    <button class="btn btn-dark w-100 py-3 mt-4 fw-bold" onclick="registrarEntrada()">GUARDAR Y ACTUALIZAR STOCK</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PANEL: DOMICILIOS Y SEGUIMIENTO -->
-        <div id="p-domicilios" class="pos-panel">
-            <div class="row g-4">
-                <div class="col-md-7">
-                    <div class="card-g p-4">
-                        <h5 class="fw-bold mb-3">Catálogo Domicilios (Google Drive Photos)</h5>
-                        <div class="row g-3" id="catalog-list" style="max-height: 500px; overflow-y: auto;"></div>
-                    </div>
-                </div>
-                <div class="col-md-5">
-                    <div class="card-g p-4">
-                        <h6 class="fw-bold"><i class="bi bi-geo-alt"></i> DATOS ENTREGA + GPS</h6>
-                        <input type="text" id="d-nom" class="form-control mb-2" placeholder="Cliente">
-                        <input type="text" id="d-dir" class="form-control mb-3" placeholder="Dirección">
-                        <button class="btn btn-outline-primary btn-sm w-100 mb-3" onclick="obtenerGps()">📍 Capturar Ubicación GPS</button>
-                        <input type="hidden" id="d-gps">
-                        <div id="cart-dom" class="small mb-2 p-2 bg-light rounded">No hay productos.</div>
-                        <h5 class="text-success fw-bold">Total: <span id="total-dom">$0</span></h5>
-                        <button class="btn btn-purple w-100 py-3 mt-2 text-white fw-bold" style="background: var(--g-purple);" onclick="finalizarPedidoOnline()">🚀 PEDIR POR WHATSAPP</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- PANEL: INVENTARIO Y EXCEL -->
+        <!-- MÓDULO INVENTARIO -->
         <div id="p-inventario" class="pos-panel">
             <div class="card-g p-4">
                 <div class="d-flex justify-content-between mb-4">
-                    <h5 class="fw-bold m-0">Inventario Real - Precio 1</h5>
-                    <button class="btn btn-success btn-sm" onclick="exportarExcel()"><i class="bi bi-file-earmark-excel"></i> Exportar a Excel</button>
+                    <h5 class="fw-bold m-0">Stock e Inventario Real</h5>
+                    <button class="btn btn-success btn-sm" onclick="exportarExcel()">📗 Exportar a Excel</button>
                 </div>
-                <table class="table table-hover">
-                    <thead class="table-dark"><tr><th>Código</th><th>Producto</th><th>Stock</th><th>Precio 1</th></tr></thead>
+                <table class="table table-hover small">
+                    <thead class="table-dark"><tr><th>EAN</th><th>Producto</th><th>Stock</th><th>Precio 1</th></tr></thead>
                     <tbody id="list-inv"></tbody>
                 </table>
             </div>
@@ -150,9 +124,8 @@
 </div>
 
 <script>
-    let cart = [], cartD = [], cajaId = "", tiempo = 18000, currentUser = "";
+    let cart = [], cajaId = "", tiempo = 18000, currentUser = "";
 
-    // NAVEGACIÓN
     function showPanel(id, el) {
         document.querySelectorAll('.pos-panel').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
@@ -161,11 +134,13 @@
         if(id === 'p-inventario') cargarInventario();
     }
 
-    // LOGIN Y TURNOS 5H
     async function login() {
         const email = document.getElementById('log_user').value, pass = document.getElementById('log_pass').value;
         cajaId = document.getElementById('select_caja').value;
+
+        // Aquí supabase ya está inicializado arriba
         const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+        
         if (!error) {
             currentUser = email;
             document.getElementById('login-screen').style.display = 'none';
@@ -173,8 +148,10 @@
             document.getElementById('label-caja').innerText = cajaId;
             document.getElementById('cajero-name').innerText = "Cajero: " + email.split('@')[0].toUpperCase();
             iniciarCronometro();
-            iniciarEscuchaRealtime();
-        } else alert("Acceso denegado.");
+            activarRealtime();
+        } else {
+            alert("Acceso denegado: Revise sus credenciales.");
+        }
     }
 
     function iniciarCronometro() {
@@ -187,30 +164,32 @@
         }, 1000);
     }
 
-    // SONIDO Y REALTIME
-    function iniciarEscuchaRealtime() {
-        supabase.channel('domicilios').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'movimientos_caja', filter: 'tipo=eq.DOMICILIO' }, payload => {
+    function activarRealtime() {
+        supabase.channel('public:movimientos_caja').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'movimientos_caja', filter: 'tipo=eq.DOMICILIO' }, () => {
             ring.play();
-            alert("🔔 ¡NUEVO PEDIDO ONLINE RECIBIDO!");
+            alert("🔔 ¡NUEVO DOMICILIO RECIBIDO!");
         }).subscribe();
     }
 
-    // VENTAS (PRECIO 1)
     async function handleVenta(e) {
         if (e.key === 'Enter') {
             const { data } = await supabase.from('productos').select('*').eq('codigo', e.target.value).single();
             if (data) {
                 const p1 = parseFloat(data.precio_1 || 0);
-                cart.push({ nombre: data.producto, precio: p1, codigo: data.codigo });
+                cart.push({ nombre: data.producto, precio: p1 });
                 renderVenta(); e.target.value = "";
-            }
+            } else alert("No encontrado");
         }
     }
 
     function renderVenta() {
         const list = document.getElementById('list-v'); list.innerHTML = ""; let t = 0;
-        cart.forEach((item, i) => { t += item.precio; list.innerHTML += `<tr><td><strong>${item.nombre}</strong></td><td>1</td><td>$${item.precio.toLocaleString()}</td><td class="text-danger pointer" onclick="cart.splice(${i},1);renderVenta()">✕</td></tr>`; });
+        cart.forEach((item, i) => { 
+            t += item.precio; 
+            list.innerHTML += `<tr><td><strong>${item.nombre}</strong></td><td>1</td><td>$${item.precio.toLocaleString()}</td><td class="text-danger pointer" onclick="cart.splice(${i},1);renderVenta()">✕</td></tr>`; 
+        });
         document.getElementById('total-v').innerText = t.toLocaleString();
+        calcVueltas();
     }
 
     function calcVueltas() {
@@ -220,35 +199,26 @@
         document.getElementById('vueltas-v').innerText = (v > 0 ? v : 0).toLocaleString();
     }
 
-    // INVENTARIO Y EXCEL
     async function cargarInventario() {
         const { data } = await supabase.from('productos').select('*').order('producto', { ascending: true });
         const list = document.getElementById('list-inv'); list.innerHTML = "";
-        data.forEach(p => { list.innerHTML += `<tr><td>${p.codigo}</td><td>${p.producto}</td><td><span class="badge bg-success">${p.stock_derecho}</span></td><td>$${parseFloat(p.precio_1 || 0).toLocaleString()}</td></tr>`; });
+        data.forEach(p => { 
+            list.innerHTML += `<tr><td>${p.codigo}</td><td>${p.producto}</td><td><span class="badge bg-success">${p.stock_derecho}</span></td><td>$${parseFloat(p.precio_1 || 0).toLocaleString()}</td></tr>`; 
+        });
     }
 
     function exportarExcel() {
-        const tabla = document.getElementById('list-inv');
+        const tabla = document.getElementById('list-inv').parentElement;
         const wb = XLSX.utils.table_to_book(tabla);
         XLSX.writeFile(wb, `Inventario_Guerrero_${new Date().toLocaleDateString()}.xlsx`);
     }
 
-    // DOMICILIOS GPS Y WHATSAPP
-    function obtenerGps() {
-        navigator.geolocation.getCurrentPosition(p => {
-            document.getElementById('d-gps').value = `https://www.google.com{p.coords.latitude},${p.coords.longitude}`;
-            alert("Ubicación capturada.");
-        });
+    function finalizarVenta() { 
+        alert("Venta Registrada en " + cajaId); 
+        cart = []; renderVenta(); 
+        document.getElementById('p-efe').value = ""; 
+        document.getElementById('p-dig').value = ""; 
     }
-
-    async function finalizarPedidoOnline() {
-        const nom = document.getElementById('d-nom').value, dir = document.getElementById('d-dir').value, gps = document.getElementById('d-gps').value;
-        const total = document.getElementById('total-dom').innerText;
-        let msg = `📦 *PEDIDO GUERRERO*\nCliente: ${nom}\nDir: ${dir}\nMapa: ${gps}\nTotal: ${total}`;
-        window.open(`https://api.whatsapp.com{encodeURIComponent(msg)}`, '_blank');
-    }
-
-    function finalizarVenta() { alert("Venta Exitosa"); cart = []; renderVenta(); }
 </script>
 </body>
 </html>
