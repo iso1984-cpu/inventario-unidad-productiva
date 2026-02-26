@@ -2,152 +2,241 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GUERRERO ERP - Auditoría de Núcleo</title>
-
-    <!-- 1. CARGA DE SEGURIDAD (Si falla la red, el sistema avisará) -->
-    <script src="https://cdn.jsdelivr.net"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guerrero ERP - Sistema Nativo Blindado</title>
+    <!-- Bootstrap para diseño profesional -->
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net"></script>
 
     <style>
         :root { --g-red: #e31e24; --g-dark: #2c3e50; }
-        body { background: #000; font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .login-card { background: #fff; padding: 40px; border-radius: 25px; width: 100%; max-width: 440px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        
-        /* Barra de Progreso de Ingeniería */
-        .progress { height: 12px; background: #e9ecef; border-radius: 20px; overflow: hidden; }
-        .progress-bar { background: var(--g-red); transition: width 0.3s; }
-        
-        /* Auditoría Visual (Caja Negra) */
-        .audit-terminal { background: #111; color: #00ff41; font-family: monospace; font-size: 0.7rem; padding: 12px; border-radius: 12px; height: 100px; overflow-y: auto; border: 1px solid #333; margin-bottom: 20px; }
-        .audit-terminal span { display: block; margin-bottom: 2px; }
-        
-        #access-ui { opacity: 0.2; pointer-events: none; transition: opacity 0.5s ease; }
+        body { background: #f4f7f6; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        .login-screen { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 20px; }
+        main { margin-left: 260px; padding: 30px; }
+        .card-g { background: white; border-radius: 15px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .nav-link { color: #adb5bd; cursor: pointer; padding: 12px; border-radius: 8px; margin-bottom: 5px; }
+        .nav-link.active { background: var(--g-red); color: white; }
+        .timer-badge { background: #1a1a1a; color: #fff; padding: 8px; border-radius: 10px; font-weight: bold; font-family: monospace; }
     </style>
 </head>
 <body>
 
-<div class="login-card shadow-lg">
-    <h3 class="fw-bold text-danger text-center mb-4">GUERRERO ERP</h3>
-    
-    <div class="d-flex justify-content-between small text-muted mb-1">
-        <span id="load-status">Sincronizando núcleo...</span>
-        <span id="load-perc">0%</span>
-    </div>
-    <div class="progress mb-3">
-        <div id="main-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
-    </div>
-
-    <!-- TERMINAL DE AUDITORÍA EN TIEMPO REAL -->
-    <div id="audit-log" class="audit-terminal">
-        <span>[SYSTEM] Iniciando auditoría de red móvil...</span>
-    </div>
-
-    <div id="access-ui">
+<!-- ACCESO AL SISTEMA -->
+<div id="login-screen" class="login-screen">
+    <div class="card p-5 text-center shadow-lg" style="width: 420px; border-radius: 20px;">
+        <h3 class="fw-bold text-danger mb-4">GUERRERO ERP</h3>
+        
         <select id="select_caja" class="form-select mb-3">
             <optgroup label="Caja 1"><option value="Caja 1 Mañana">☀️ Caja 1 - Mañana</option><option value="Caja 1 Tarde">🌙 Caja 1 - Tarde</option></optgroup>
             <optgroup label="Caja 2"><option value="Caja 2 Mañana">☀️ Caja 2 - Mañana</option><option value="Caja 2 Tarde">🌙 Caja 2 - Tarde</option></optgroup>
             <optgroup label="Caja 3"><option value="Caja 3 Mañana">☀️ Caja 3 - Mañana</option><option value="Caja 3 Tarde">🌙 Caja 3 - Tarde</option></optgroup>
             <optgroup label="Caja 4"><option value="Caja 4 Mañana">☀️ Caja 4 - Mañana</option><option value="Caja 4 Tarde">🌙 Caja 4 - Tarde</option></optgroup>
         </select>
+
         <input type="email" id="log_user" class="form-control mb-2" placeholder="usuario@correo.com">
-        <input type="password" id="log_pass" class="form-control mb-4" placeholder="••••••••">
-        <button id="btn-login" class="btn btn-danger w-100 py-3 fw-bold shadow" onclick="GuerreroEngine.login()" disabled>CONECTANDO...</button>
+        <input type="password" id="log_pass" class="form-control mb-4" placeholder="Contraseña">
+        
+        <button id="btn-login" class="btn btn-danger w-100 py-3 fw-bold shadow" onclick="loginNativo()">INICIAR TURNO 5H</button>
     </div>
 </div>
 
+<!-- APLICACIÓN PRINCIPAL -->
+<div id="app" style="display:none;">
+    <aside class="sidebar shadow">
+        <div class="mb-5 text-center"><h4 class="fw-bold m-0">GUERRERO</h4><small class="text-danger">Sistema 360°</small></div>
+        <nav class="nav flex-column">
+            <div class="nav-link active" onclick="showP('p-ventas', this)"><i class="bi bi-cart me-2"></i> Ventas</div>
+            <div class="nav-link" onclick="showP('p-inv', this)"><i class="bi bi-box me-2"></i> Inventario</div>
+        </nav>
+        <hr>
+        <div class="text-center">
+            <div id="disp-caja" class="badge bg-danger mb-2 p-2 w-100">---</div>
+            <div id="timer-h" class="timer-badge mb-2 fs-5">05:00:00</div>
+            <p id="disp-user" class="small fw-bold mt-2">Cajero: ---</p>
+        </div>
+        <button class="btn btn-link text-danger w-100 mt-4 small" onclick="location.reload()">Cerrar Sesión</button>
+    </aside>
+
+    <main>
+        <!-- MÓDULO VENTAS -->
+        <div id="p-ventas" class="pos-panel">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card-g p-4">
+                        <div class="d-flex justify-content-between mb-4">
+                            <h5 class="fw-bold">Nueva Remisión</h5>
+                            <input type="text" id="scan_in" class="form-control w-50" placeholder="🔍 Escanee producto..." onkeypress="handleScan(event)">
+                        </div>
+                        <table class="table align-middle">
+                            <thead class="table-light"><tr><th>Producto</th><th>Cant</th><th>Subtotal</th><th>Acción</th></tr></thead>
+                            <tbody id="cart-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card-g p-4 text-center">
+                        <small class="text-muted">TOTAL A COBRAR</small>
+                        <h1 class="text-success fw-bold display-4">$<span id="total-val">0</span></h1>
+                        <hr>
+                        <button id="btn-finalizar" class="btn btn-success w-100 py-3 fw-bold shadow" onclick="finalizarVenta()">REGISTRAR Y ENVIAR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÓDULO INVENTARIO -->
+        <div id="p-inv" class="pos-panel" style="display:none;">
+            <div class="card-g p-4">
+                <h5 class="fw-bold mb-4">Stock en Tiempo Real</h5>
+                <table class="table table-sm table-hover">
+                    <thead class="table-dark"><tr><th>EAN</th><th>Nombre</th><th>Stock</th><th>Precio</th></tr></thead>
+                    <tbody id="inv-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
 <script>
-/**
- * MOTOR DE RESILIENCIA Y AUDITORÍA - GUERRERO V15
- */
-const GuerreroEngine = (() => {
-    const CONFIG = {
-        URL: "https://tzseklsayxaldtqatwuq.supabase.co",
-        KEY: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5"
-    };
+    // CONFIGURACIÓN NATIVA
+    const SURL = "https://tzseklsayxaldtqatwuq.supabase.co"; 
+    const SKEY = "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5";
+    
+    // EmailJS (Configúralo aquí)
+    emailjs.init("TU_USER_ID_EMAILJS");
 
-    let client = null;
+    let carrito = [], cajaId = "", tiempo = 18000, userMail = "";
 
-    const log = (msg) => {
-        const terminal = document.getElementById('audit-log');
-        terminal.innerHTML += `<span>[AUDIT] ${msg}</span>`;
-        terminal.scrollTop = terminal.scrollHeight;
-    };
-
-    const updateUI = (perc, status) => {
-        document.getElementById('main-bar').style.width = perc + '%';
-        document.getElementById('load-perc').innerText = perc + '%';
-        document.getElementById('load-status').innerText = status;
-    };
-
-    const boot = async () => {
-        log("Probando conectividad con Supabase...");
-        updateUI(25, "Analizando RED...");
-
-        // Verificación de existencia del SDK (Poll Pattern)
-        let retries = 0;
-        while (!window.supabase && retries < 15) {
-            log(`Reintento de detección SDK ${retries + 1}...`);
-            await new Promise(r => setTimeout(r, 400));
-            retries++;
-        }
-
-        if (window.supabase) {
-            updateUI(70, "Cargando Cliente...");
-            try {
-                client = window.supabase.createClient(CONFIG.URL, CONFIG.KEY);
-                log("Conexión con Supabase Establecida.");
-                updateUI(100, "Núcleo Listo");
-                
-                // Desbloqueo de interfaz
-                document.getElementById('access-ui').style.opacity = "1";
-                document.getElementById('access-ui').style.pointerEvents = "auto";
-                document.getElementById('btn-login').disabled = false;
-                document.getElementById('btn-login').innerText = "INICIAR TURNO 5H";
-            } catch (err) {
-                log("Fallo crítico en configuración de cliente.");
-            }
-        } else {
-            updateUI(0, "Error de SDK");
-            log("ERROR CRÍTICO: Red Bloqueada (DNS/Firewall).");
-            alert("Bloqueo Detectado. Use WiFi o cambie a un navegador sin extensiones.");
-        }
-    };
-
-    const login = async () => {
+    // 1. INGRESO NATIVO (Súper rápido y sin bloqueos)
+    async function loginNativo() {
         const email = document.getElementById('log_user').value;
-        const pass = document.getElementById('log_pass').value;
-        const caja = document.getElementById('select_caja').value;
+        const password = document.getElementById('log_pass').value;
+        cajaId = document.getElementById('select_caja').value;
         const btn = document.getElementById('btn-login');
 
         btn.disabled = true;
-        btn.innerText = "VALIDANDO ACCESO...";
-        log(`Validando credenciales para: ${email}`);
+        btn.innerText = "VERIFICANDO...";
 
         try {
-            const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
+            const res = await fetch(`${SURL}/auth/v1/token?grant_type=password`, {
+                method: 'POST',
+                headers: { 'apikey': SKEY, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-            if (error) {
-                log(`Acceso denegado: ${error.message}`);
-                alert("Error: " + error.message);
-                btn.disabled = false;
-                btn.innerText = "REINTENTAR";
+            const data = await res.json();
+
+            if (res.ok) {
+                userMail = email;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                document.getElementById('disp-caja').innerText = cajaId;
+                document.getElementById('disp-user').innerText = "Cajero: " + email.split('@')[0].toUpperCase();
+                
+                // AUDITORÍA DE INGRESO
+                fetch(`${SURL}/rest/v1/auditoria_logins`, {
+                    method: 'POST',
+                    headers: { 'apikey': SKEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+                    body: JSON.stringify({ cajero: email, caja: cajaId, fecha: new Date().toISOString() })
+                });
+
+                iniciarTimer();
             } else {
-                log("Acceso concedido. Registrando auditoría de turno...");
-                // Registro de auditoría
-                await client.from('auditoria_logins').insert([{ cajero: email, caja: caja, fecha: new Date().toISOString() }]);
-                log("Redirigiendo...");
-                // Aquí va la lógica para entrar a la aplicación
+                alert("Acceso denegado: " + (data.error_description || "Datos incorrectos"));
+                btn.disabled = false;
+                btn.innerText = "INICIAR TURNO 5H";
             }
         } catch (e) {
-            log("Error de conexión durante el login.");
+            alert("Error de red: Revise su conexión.");
             btn.disabled = false;
         }
-    };
+    }
 
-    window.addEventListener('DOMContentLoaded', boot);
-    return { login };
-})();
+    // 2. CONTADOR DE 5 HORAS
+    function iniciarTimer() {
+        const interval = setInterval(() => {
+            if (tiempo > 0) {
+                tiempo--;
+                let h = Math.floor(tiempo / 3600), m = Math.floor((tiempo % 3600) / 60), s = tiempo % 60;
+                document.getElementById('timer-h').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            } else {
+                clearInterval(interval);
+                alert("TURNO VENCIDO. El sistema se bloqueará.");
+                location.reload();
+            }
+        }, 1000);
+    }
+
+    // 3. ESCÁNER NATIVO (Busca productos sin librerías)
+    async function handleScan(e) {
+        if (e.key === 'Enter') {
+            const ean = e.target.value.trim();
+            const res = await fetch(`${SURL}/rest/v1/productos?ean=eq.${ean}&select=*`, {
+                headers: { 'apikey': SKEY, 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            
+            if (data.length > 0) {
+                carrito.push(data[0]);
+                renderCart();
+            } else { alert("Producto no encontrado."); }
+            e.target.value = "";
+        }
+    }
+
+    function renderCart() {
+        let total = 0;
+        document.getElementById('cart-list').innerHTML = carrito.map((p, i) => {
+            total += p.precio1;
+            return `<tr><td>${p.nombre}</td><td>1</td><td>$${p.precio1.toLocaleString()}</td><td><button class="btn btn-sm btn-danger" onclick="carrito.splice(${i},1);renderCart()"><i class="bi bi-trash"></i></button></td></tr>`;
+        }).join('');
+        document.getElementById('total-val').innerText = total.toLocaleString();
+    }
+
+    // 4. FINALIZAR VENTA CON DESCUENTO DE STOCK Y CORREO
+    async function finalizarVenta() {
+        if (carrito.length === 0) return alert("Carrito vacío");
+        const btn = document.getElementById('btn-finalizar');
+        btn.disabled = true;
+
+        try {
+            // Descuento de Stock por cada item
+            for (let p of carrito) {
+                await fetch(`${SURL}/rest/v1/productos?ean=eq.${p.ean}`, {
+                    method: 'PATCH',
+                    headers: { 'apikey': SKEY, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stock: p.stock - 1 })
+                });
+            }
+
+            // Envío de Correo (EmailJS)
+            await emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
+                caja: cajaId,
+                vendedor: userMail,
+                total: document.getElementById('total-val').innerText,
+                detalle: carrito.map(i => i.nombre).join(", ")
+            });
+
+            alert("✅ Venta registrada y reporte enviado.");
+            carrito = [];
+            renderCart();
+        } catch (e) { alert("Error al procesar: " + e.message); }
+        finally { btn.disabled = false; }
+    }
+
+    async function cargarInv() {
+        const res = await fetch(`${SURL}/rest/v1/productos?select=*`, { headers: { 'apikey': SKEY } });
+        const data = await res.json();
+        document.getElementById('inv-list').innerHTML = data.map(p => `<tr><td>${p.ean}</td><td>${p.nombre}</td><td>${p.stock}</td><td>$${p.precio1}</td></tr>`).join('');
+    }
+
+    function showP(id, el) {
+        document.querySelectorAll('.pos-panel').forEach(p => p.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+        if (id === 'p-inv') cargarInv();
+    }
 </script>
 </body>
 </html>
