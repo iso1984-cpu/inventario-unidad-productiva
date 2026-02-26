@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GUERRERO ERP - Panel Maestro</title>
+    <!-- Librerías Reforzadas -->
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net">
     
@@ -11,39 +12,39 @@
         :root { --g-red: #e31e24; --g-dark: #0f172a; --g-emerald: #00a650; }
         body { background: #f1f5f9; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
         .sidebar { background: var(--g-dark); color: white; min-height: 100vh; width: 260px; position: fixed; padding: 25px; z-index: 1000; }
-        main { margin-left: 260px; padding: 30px; transition: 0.3s; }
+        main { margin-left: 260px; padding: 30px; transition: all 0.3s; }
+        
         .nav-link { color: #94a3b8; cursor: pointer; padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; }
         .nav-link.active { background: var(--g-red); color: white; box-shadow: 0 4px 15px rgba(227, 30, 36, 0.3); }
         .card-g { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 25px; border: none; }
         .timer-h { background: #1e293b; color: #38bdf8; padding: 12px; border-radius: 12px; font-family: monospace; font-weight: bold; font-size: 1.8rem; text-align: center; }
         
-        /* Control de Paneles */
         .pos-panel { display: none; }
-        .pos-panel.active { display: block; animation: fadeIn 0.5s; }
+        .pos-panel.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Estilo del aviso de inicio para que no bloquee */
-        #aviso-inicio { cursor: pointer; transition: 0.3s; }
-        #aviso-inicio:hover { transform: scale(1.01); }
+        /* Estilo aviso inicial reforzado */
+        #aviso-inicio { position: relative; border-left: 5px solid var(--g-emerald); }
+        .btn-cerrar-aviso { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.5rem; color: #155724; }
+        .btn-cerrar-aviso:hover { color: black; }
     </style>
 </head>
 <body>
 
 <div id="wrapper">
     <aside class="sidebar shadow">
-        <div class="mb-5 text-center text-white">
-            <h4 class="fw-bold m-0">GUERRERO</h4>
+        <div class="mb-5 text-center">
+            <h4 class="fw-bold m-0 text-white">GUERRERO</h4>
             <small class="text-danger fw-bold">NÚCLEO ERP</small>
         </div>
         
         <button class="btn btn-success w-100 mb-4 py-3 fw-bold shadow-sm" style="background-color: var(--g-emerald); border:none;" onclick="showP('p-ventas', this)">
-            <i class="bi bi-cart-plus-fill me-2"></i> REMISIONAR
+            <i class="bi bi-cart-plus-fill me-2"></i> NUEVA VENTA
         </button>
 
         <nav class="nav flex-column">
-            <div class="nav-link active" id="btn-v" onclick="showP('p-ventas', this)"><i class="bi bi-cart3 me-3"></i> Ventas (Salidas)</div>
-            <div class="nav-link" id="btn-i" onclick="showP('p-inv', this)"><i class="bi bi-box-seam me-3"></i> Inventario (Productos)</div>
+            <div class="nav-link active" onclick="showP('p-ventas', this)"><i class="bi bi-cart3 me-3"></i> Ventas (Salidas)</div>
+            <div class="nav-link" onclick="showP('p-inv', this)"><i class="bi bi-box-seam me-3"></i> Inventario (Productos)</div>
         </nav>
 
         <hr class="text-secondary my-5">
@@ -54,32 +55,33 @@
             <p class="small fw-bold mt-3 text-light opacity-75">Cajero: SARAH</p>
         </div>
 
-        <button class="btn btn-warning w-100 mt-4 fw-bold shadow-sm btn-sm" onclick="finalizarTurno()">CIERRE DE CAJA</button>
+        <button class="btn btn-warning w-100 mt-4 fw-bold shadow-sm btn-sm" onclick="finalizarTurno()">FINALIZAR TURNO</button>
     </aside>
 
     <main>
-        <!-- Aviso de inicio que se puede cerrar al hacer clic -->
-        <div id="aviso-inicio" class="alert alert-success border-0 shadow-sm mb-4 py-3 text-center" onclick="this.style.display='none'">
+        <!-- Aviso de inicio reforzado con botón de cierre -->
+        <div id="aviso-inicio" class="alert alert-success border-0 shadow-sm mb-4 py-4 text-center">
+            <span class="btn-cerrar-aviso" onclick="cerrarAviso()"><i class="bi bi-x-circle-fill"></i></span>
             <p class="fw-bold m-0 fs-5">"Les agradecemos por ser parte de nuestro equipo. Que Dios los bendiga y que el turno sea un éxito."</p>
-            <small class="text-muted">(Clic para minimizar este mensaje)</small>
+            <button class="btn btn-sm btn-outline-success mt-2 fw-bold" onclick="cerrarAviso()">ENTENDIDO, EMPEZAR TRABAJO</button>
         </div>
 
         <!-- PANEL VENTAS -->
         <div id="p-ventas" class="pos-panel active">
             <div class="card-g">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold m-0 text-danger"><i class="bi bi-upc-scan me-2"></i> Nueva Remisión de Salida</h5>
-                    <input type="text" id="ean-scanner" class="form-control w-50 border-danger" placeholder="🔍 Escanee código..." onkeypress="handleScan(event)" autofocus>
+                    <h5 class="fw-bold m-0 text-danger"><i class="bi bi-upc-scan me-2"></i> Escáner de Productos</h5>
+                    <input type="text" id="ean-scanner" class="form-control w-50 border-danger shadow-sm" placeholder="🔍 Pase el escáner aquí..." onkeypress="handleScan(event)" autofocus>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead><tr><th>Producto</th><th>Precio</th><th>Acción</th></tr></thead>
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light"><tr><th>Producto</th><th>Precio</th><th class="text-center">Acción</th></tr></thead>
                         <tbody id="v-list"></tbody>
                     </table>
                 </div>
                 <div class="text-end mt-4 pt-4 border-top">
-                    <h3 class="fw-bold text-success">TOTAL: $<span id="t-val">0</span></h3>
-                    <button class="btn btn-success px-5 py-3 fw-bold shadow" onclick="registrarVenta()">REGISTRAR SALIDA</button>
+                    <h3 class="fw-bold text-success">TOTAL VENTA: $<span id="t-val">0</span></h3>
+                    <button class="btn btn-danger px-5 py-3 fw-bold shadow" onclick="registrarVenta()">PROCESAR SALIDA</button>
                 </div>
             </div>
         </div>
@@ -87,9 +89,12 @@
         <!-- PANEL INVENTARIO -->
         <div id="p-inv" class="pos-panel">
             <div class="card-g">
-                <h5 class="fw-bold mb-4">Stock Real en Bodega</h5>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold m-0">Stock Real en Bodega</h5>
+                    <button class="btn btn-sm btn-dark" onclick="cargarInv()"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+                </div>
                 <table class="table table-hover table-sm">
-                    <thead class="table-dark"><tr><th>Nombre</th><th>Stock</th><th>Precio</th></tr></thead>
+                    <thead class="table-dark"><tr><th>Nombre</th><th>Stock Actual</th><th>Precio Unitario</th></tr></thead>
                     <tbody id="i-list"></tbody>
                 </table>
             </div>
@@ -100,25 +105,27 @@
 <script>
     const VAULT = {
         U: "https://tzseklsayxaldtqatwuq.supabase.co",
-        K: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5"
+        K: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5" // Tu Clave API
     };
 
     let segundos = 18000, carrito = [], totalTurno = 0;
 
-    // Función silenciosa para evitar el error 404 sin bloquear el flujo
+    // Función de Auditoría Reforzada (Envía apikey correctamente)
     async function initAuditoria() {
-        fetch(`${VAULT.U}/rest/v1/auditoria_logins`, {
-            method: 'POST',
-            headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usuario: "SARAH", evento: "Inicio de Turno", fecha: new Date().toISOString() })
-        }).catch(e => console.warn("Tabla de auditoría no encontrada, pero el sistema continúa."));
+        try {
+            await fetch(`${VAULT.U}/rest/v1/auditoria_logins`, {
+                method: 'POST',
+                headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+                body: JSON.stringify({ usuario: "SARAH", evento: "Inicio de Turno", fecha: new Date().toISOString() })
+            });
+        } catch (e) { console.log("Nota: Tabla de auditoría no configurada aún."); }
     }
 
     window.onload = () => {
         initAuditoria();
-        // Foco automático al scanner para agilizar
         document.getElementById('ean-scanner').focus();
         
+        // Temporizador del reloj
         setInterval(() => {
             if (segundos > 0) {
                 segundos--;
@@ -127,6 +134,13 @@
             }
         }, 1000);
     };
+
+    function cerrarAviso() {
+        const aviso = document.getElementById('aviso-inicio');
+        aviso.style.transition = "0.5s";
+        aviso.style.opacity = "0";
+        setTimeout(() => { aviso.style.display = "none"; }, 500);
+    }
 
     async function handleScan(e) {
         if (e.key === 'Enter') {
@@ -139,9 +153,9 @@
                     carrito.push(data[0]); 
                     renderVenta(); 
                 } else {
-                    alert("Producto no encontrado");
+                    alert("⚠️ Producto no encontrado en inventario.");
                 }
-            } catch (err) { console.error("Error de red"); }
+            } catch (err) { console.error("Error de conexión"); }
             e.target.value = "";
         }
     }
@@ -150,7 +164,7 @@
         let t = 0;
         document.getElementById('v-list').innerHTML = carrito.map((p, i) => {
             t += p.precio1;
-            return `<tr><td>${p.nombre}</td><td>$${p.precio1.toLocaleString()}</td><td><button class="btn btn-sm text-danger border-0" onclick="carrito.splice(${i},1);renderVenta()"><i class="bi bi-trash"></i></button></td></tr>`;
+            return `<tr><td>${p.nombre}</td><td>$${p.precio1.toLocaleString()}</td><td class="text-center"><button class="btn btn-sm text-danger" onclick="carrito.splice(${i},1);renderVenta()"><i class="bi bi-trash"></i></button></td></tr>`;
         }).join('');
         document.getElementById('t-val').innerText = t.toLocaleString();
     }
@@ -159,51 +173,56 @@
         if(carrito.length === 0) return;
         const totalVenta = parseInt(document.getElementById('t-val').innerText.replace(/\D/g,''));
         
-        for (let item of carrito) {
-            await fetch(`${VAULT.U}/rest/v1/salidas`, {
-                method: 'POST',
-                headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ producto: item.nombre, monto: item.precio1, fecha: new Date().toISOString() })
-            });
-            await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${item.ean}`, {
-                method: 'PATCH',
-                headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ stock: item.stock - 1 })
-            });
-        }
-        totalTurno += totalVenta;
-        alert("✅ Venta registrada correctamente");
-        carrito = []; renderVenta();
+        try {
+            for (let item of carrito) {
+                // Registrar Salida
+                await fetch(`${VAULT.U}/rest/v1/salidas`, {
+                    method: 'POST',
+                    headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ producto: item.nombre, monto: item.precio1, fecha: new Date().toISOString() })
+                });
+                // Actualizar Stock
+                await fetch(`${VAULT.U}/rest/v1/productos?ean=eq.${item.ean}`, {
+                    method: 'PATCH',
+                    headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stock: item.stock - 1 })
+                });
+            }
+            totalTurno += totalVenta;
+            alert("✅ Venta registrada y stock actualizado.");
+            carrito = []; renderVenta();
+        } catch (e) { alert("Error al registrar venta."); }
     }
 
     async function cargarInv() {
-        const res = await fetch(`${VAULT.U}/rest/v1/productos?select=*&order=nombre.asc`, { headers: { 'apikey': VAULT.K } });
-        const data = await res.json();
-        document.getElementById('i-list').innerHTML = data.map(p => `<tr><td>${p.nombre}</td><td>${p.stock}</td><td>$${p.precio1.toLocaleString()}</td></tr>`).join('');
+        try {
+            const res = await fetch(`${VAULT.U}/rest/v1/productos?select=*&order=nombre.asc`, { headers: { 'apikey': VAULT.K } });
+            const data = await res.json();
+            document.getElementById('i-list').innerHTML = data.map(p => `<tr><td>${p.nombre}</td><td><span class="badge bg-secondary">${p.stock}</span></td><td>$${p.precio1.toLocaleString()}</td></tr>`).join('');
+        } catch (e) { console.error("Error al cargar inventario"); }
     }
 
     function showP(id, el) {
-        // Ocultar aviso al cambiar de pestaña para liberar espacio
-        document.getElementById('aviso-inicio').style.display = 'none';
-        
+        cerrarAviso(); // Cerrar aviso automáticamente al navegar
         document.querySelectorAll('.pos-panel').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        if(el) el.classList.add('active');
-        
+        if(el.classList.contains('nav-link')) el.classList.add('active');
         if(id === 'p-inv') cargarInv();
         if(id === 'p-ventas') document.getElementById('ean-scanner').focus();
     }
 
     async function finalizarTurno() {
-        if(confirm(`¿Cerrar caja por $${totalTurno.toLocaleString()}?`)) {
-            await fetch(`${VAULT.U}/rest/v1/movimientos_caja`, {
-                method: 'POST',
-                headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tipo: "CIERRE", monto: totalTurno, cajero: "SARAH", fecha: new Date().toISOString() })
-            });
-            location.reload();
+        if(confirm(`¿Desea cerrar caja?\nTotal del turno: $${totalTurno.toLocaleString()}`)) {
+            try {
+                await fetch(`${VAULT.U}/rest/v1/movimientos_caja`, {
+                    method: 'POST',
+                    headers: { 'apikey': VAULT.K, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tipo: "CIERRE_TURNO", monto: totalTurno, cajero: "SARAH", fecha: new Date().toISOString() })
+                });
+                alert("Turno finalizado con éxito.");
+                location.reload();
+            } catch (e) { location.reload(); }
         }
     }
 </script>
