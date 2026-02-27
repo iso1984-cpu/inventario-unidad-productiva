@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>GUERRERO ERP v2.8.8 - Final Estable</title>
+    <title>GUERRERO ERP v2.8.9 - Stock & Multitask</title>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <style>
         :root { --g-red: #e31e24; --g-dark: #1a1a1a; }
@@ -11,20 +11,24 @@
         .nav-link { color: #adb5bd; padding: 12px 25px; cursor: pointer; text-decoration: none; display: block; border-left: 4px solid transparent; }
         .nav-link.active { background: #2a2a2a; color: white !important; border-left-color: var(--g-red); }
         main { margin-left: 260px; padding: 25px; width: calc(100% - 260px); min-height: 100vh; }
-        .tabs-bar { display: flex; gap: 5px; margin-bottom: 10px; overflow-x: auto; }
-        .tab-item { background: #dee2e6; padding: 10px 20px; border-radius: 10px 10px 0 0; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 10px; min-width: 140px; }
+        
+        /* PESTAÑAS SEPARADAS */
+        .tabs-bar { display: flex; gap: 5px; margin-bottom: 0; overflow-x: auto; }
+        .tab-item { background: #dee2e6; padding: 10px 20px; border-radius: 10px 10px 0 0; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 10px; min-width: 150px; border: 1px solid #ccc; border-bottom: none; }
         .tab-item.active { background: white; border-top: 4px solid var(--g-red); color: var(--g-red); }
-        .workspace { background: white; border: 1px solid #ddd; border-radius: 0 15px 15px 15px; padding: 25px; min-height: 70vh; position: relative; }
+        
+        .workspace { background: white; border: 1px solid #ddd; border-radius: 0 15px 15px 15px; padding: 25px; min-height: 70vh; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .item-row { display: grid; grid-template-columns: 1fr 3fr 1.2fr 1.2fr 1.2fr 40px; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
         #results { position: absolute; width: 95%; z-index: 3000; background: white; border: 2px solid var(--g-red); max-height: 300px; overflow-y: auto; display: none; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .res-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        .pay-btn { height: 80px; font-weight: 800; font-size: 1.2rem; border-radius: 15px; border: none; transition: 0.2s; }
+        .pay-btn { height: 75px; font-weight: 800; font-size: 1.1rem; border-radius: 15px; border: none; }
     </style>
 </head>
 <body onclick="cerrarBuscador()">
 
 <div id="login-screen" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--g-dark);">
     <div class="bg-white p-5 rounded-4 shadow-lg text-center" style="width: 420px;">
-        <h3 class="fw-bold text-danger mb-4">GUERRERO ERP v2.8.8</h3>
+        <h3 class="fw-bold text-danger mb-4">GUERRERO ERP v2.8.9</h3>
         <select id="select-caja" class="form-select mb-3 fw-bold border-danger">
             <option>Caja 1 - Mañana</option><option>Caja 1 - Tarde</option>
             <option>Caja 2 - Mañana</option><option>Caja 2 - Tarde</option>
@@ -33,7 +37,7 @@
         </select>
         <input type="text" id="u" class="form-control mb-2 py-2" placeholder="Usuario">
         <input type="password" id="p" class="form-control mb-4 py-2" placeholder="Contraseña">
-        <button class="btn btn-danger w-100 fw-bold py-3 shadow" onclick="login()">INGRESAR AL ERP</button>
+        <button class="btn btn-danger w-100 fw-bold py-3 shadow" onclick="login()">INGRESAR AL SISTEMA</button>
     </div>
 </div>
 
@@ -41,16 +45,23 @@
     <div class="sidebar shadow">
         <div class="p-4 border-bottom border-secondary mb-3 text-white text-center"><h5 class="fw-bold">GUERRERO ERP</h5><small id="info-u">---</small></div>
         <div class="nav flex-column">
-            <div class="nav-link active" onclick="setVista('POS')">📦 Ventas / Compras</div>
-            <div class="nav-link" onclick="setVista('CAJA')">💵 Movimientos de Caja</div>
-            <div class="nav-link" onclick="setVista('CLIENTES')">👤 Gestión de Clientes</div>
+            <div class="nav-link active" id="l-ventas" onclick="setVista('VENTAS')">📦 Módulo de Ventas</div>
+            <div class="nav-link" id="l-compras" onclick="setVista('COMPRAS')">📥 Módulo de Compras</div>
+            <div class="nav-link" id="l-caja" onclick="setVista('CAJA')">💵 Movimientos de Caja</div>
+            <div class="nav-link" id="l-cli" onclick="setVista('CLIENTES')">👤 Gestión de Clientes</div>
             <div class="nav-link text-warning mt-5" onclick="location.reload()">🔒 Cerrar Sesión</div>
         </div>
     </div>
 
     <main>
+        <!-- VISTA POS (VENTAS O COMPRAS) -->
         <div id="view-pos">
-            <div id="tabs-header" class="tabs-bar"></div>
+            <div class="d-flex justify-content-between align-items-end">
+                <div id="tabs-header" class="tabs-bar"></div>
+                <div class="mb-2">
+                    <button id="btn-nuevo-doc" class="btn btn-danger fw-bold shadow-sm" onclick="crearNuevoDoc()">+ NUEVA PESTAÑA</button>
+                </div>
+            </div>
             <div class="workspace shadow-sm">
                 <div class="row">
                     <div class="col-md-9" onclick="event.stopPropagation()">
@@ -63,48 +74,51 @@
                         <div id="lista-items"></div>
                     </div>
                     <div class="col-md-3 text-center border-start ps-4">
-                        <p class="small fw-bold text-secondary mb-1">TOTAL REDONDEADO</p>
-                        <h1 class="fw-bold text-danger mb-4" style="font-size: 3rem;">$<span id="total-val">0</span></h1>
-                        <button class="btn btn-danger btn-lg w-100 py-4 fw-bold shadow-sm mb-3" onclick="abrirPagos()">COBRAR (F8)</button>
-                        <button class="btn btn-sm btn-outline-dark w-100 mb-2" onclick="nuevaRemision('SALIDA')">+ NUEVA VENTA</button>
+                        <p class="small fw-bold text-secondary mb-1">TOTAL DOCUMENTO</p>
+                        <h1 class="fw-bold text-danger mb-4" style="font-size: 2.8rem;">$<span id="total-val">0</span></h1>
+                        <button id="btn-finalizar" class="btn btn-danger btn-lg w-100 py-4 fw-bold shadow-sm mb-3" onclick="abrirAccion()">FINALIZAR (F8)</button>
+                        <button class="btn btn-sm btn-outline-dark w-100" onclick="reimprimir()">🔄 RE-IMPRIMIR ÚLTIMO</button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- MODAL PAGOS VENTAS -->
         <div id="modal-pagos" class="modal fade" data-bs-backdrop="static" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content p-4 border-0 shadow-lg" style="border-radius: 25px;">
                     <h4 class="text-center fw-bold mb-4 text-danger">Medio de Pago</h4>
                     <div class="row g-3">
-                        <div class="col-6"><button class="btn btn-success w-100 pay-btn" onclick="finalizar('EFECTIVO')">💵 EFECTIVO</button></div>
-                        <div class="col-6"><button class="btn btn-info w-100 pay-btn text-white" onclick="finalizar('NEQUI')">🟣 NEQUI</button></div>
-                        <div class="col-6"><button class="btn btn-primary w-100 pay-btn" onclick="finalizar('Bre-B')">🔵 Bre-B QR</button></div>
-                        <div class="col-6"><button class="btn btn-dark w-100 pay-btn" onclick="finalizar('DATAFONO')">💳 DATAFONO</button></div>
+                        <div class="col-6"><button class="btn btn-success w-100 pay-btn" onclick="procesarFinal('EFECTIVO')">💵 EFECTIVO</button></div>
+                        <div class="col-6"><button class="btn btn-info w-100 pay-btn text-white" onclick="procesarFinal('NEQUI')">🟣 NEQUI</button></div>
+                        <div class="col-6"><button class="btn btn-primary w-100 pay-btn" onclick="procesarFinal('Bre-B')">🔵 Bre-B QR</button></div>
+                        <div class="col-6"><button class="btn btn-dark w-100 pay-btn" onclick="procesarFinal('DATAFONO')">💳 DATAFONO</button></div>
                     </div>
                     <button class="btn btn-link text-muted mt-3" data-bs-dismiss="modal">Cancelar</button>
                 </div>
             </div>
         </div>
 
+        <!-- MOVIMIENTOS CAJA -->
         <div id="view-caja" style="display:none;" class="workspace shadow-sm">
-            <h4 class="fw-bold mb-4 border-bottom pb-2">Control de Turno de Caja</h4>
+            <h4 class="fw-bold mb-4 border-bottom pb-2">Control de Caja y Cierre</h4>
             <div class="row g-3">
                 <div class="col-md-4"><label class="small fw-bold">Base Inicial $</label><input type="number" id="base_inicial" class="form-control"></div>
                 <div class="col-md-4"><label class="small fw-bold">Préstamo Sarah $</label><input type="number" id="prestamo_sarah" class="form-control" value="0"></div>
-                <div class="col-md-4"><label class="small fw-bold">Retiro Sarah $</label><input type="number" id="retiro_sarah" class="form-control" value="0"></div>
+                <div class="col-md-4"><label class="small fw-bold text-danger">Retiro Sarah $</label><input type="number" id="retiro_sarah" class="form-control" value="0"></div>
                 <div class="col-md-4"><label class="small fw-bold text-info">Venta Nequi $</label><input type="number" id="venta_nequi" class="form-control" value="0"></div>
                 <div class="col-md-4"><label class="small fw-bold text-info">Venta Bre-B $</label><input type="number" id="venta_breb_qr" class="form-control" value="0"></div>
                 <div class="col-md-4"><label class="small fw-bold text-info">Venta Datáfono $</label><input type="number" id="venta_datafono" class="form-control" value="0"></div>
-                <div class="col-md-12"><label class="small fw-bold text-success">Arqueo Final (Efectivo Físico) $</label><input type="number" id="base_final" class="form-control border-success"></div>
-                <div class="col-md-6 mt-4"><button class="btn btn-dark w-100 fw-bold py-3 shadow" onclick="guardarMovCaja()">💾 GUARDAR MOVIMIENTOS</button></div>
-                <div class="col-md-6 mt-4"><button class="btn btn-danger w-100 fw-bold py-3 shadow" onclick="enviarCierre()">📧 ENVIAR CIERRE GMAIL</button></div>
+                <div class="col-md-12"><label class="small fw-bold text-success">Arqueo Efectivo Final $</label><input type="number" id="base_final" class="form-control border-success"></div>
+                <div class="col-md-6 mt-4"><button class="btn btn-dark w-100 fw-bold py-3" onclick="guardarMovCaja()">💾 GUARDAR MOVIMIENTOS</button></div>
+                <div class="col-md-6 mt-4"><button class="btn btn-danger w-100 fw-bold py-3" onclick="enviarCierreStock()">📧 ENVIAR CIERRE Y REPORTE STOCK</button></div>
             </div>
         </div>
 
-        <div id="view-clientes" style="display:none;" class="workspace shadow-sm">
-            <div class="d-flex justify-content-between mb-4"><h4 class="fw-bold">Directorio de Clientes</h4><button class="btn btn-danger" onclick="crearCliente()">+ Nuevo Cliente</button></div>
-            <table class="table table-hover border"><thead class="table-dark"><tr><th>Documento</th><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Dirección</th></tr></thead><tbody id="cli-tabla"></tbody></table>
+        <!-- CLIENTES -->
+        <div id="view-clientes" style="display:none;" class="workspace">
+            <div class="d-flex justify-content-between mb-4 border-bottom pb-2"><h4>Gestión de Clientes</h4><button class="btn btn-danger" onclick="crearCliente()">+ Nuevo</button></div>
+            <table class="table table-hover border"><thead class="table-dark"><tr><th>Doc</th><th>Nombre</th><th>Tel</th><th>Email</th><th>Dir</th></tr></thead><tbody id="cli-tabla"></tbody></table>
         </div>
     </main>
 </div>
@@ -113,7 +127,7 @@
 <script>
     const VAULT = { U: "https://tzseklsayxaldtqatwuq.supabase.co", K: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5" };
     const headers = { 'apikey': VAULT.K, 'Authorization': `Bearer ${VAULT.K}`, 'Content-Type': 'application/json' };
-    let docs = [], activeId = 0, uActivo = '', cajaActual = '';
+    let docs = [], activeId = 0, uActivo = '', cajaActual = '', vistaActual = 'VENTAS';
 
     async function login() {
         const u = document.getElementById('u').value.trim();
@@ -125,23 +139,38 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'flex';
             document.getElementById('info-u').innerText = "Cajero: " + uActivo;
-            nuevaRemision('SALIDA');
+            crearNuevoDoc();
         } else alert("Acceso Incorrecto");
     }
 
-    function nuevaRemision(tipo) { const id = Date.now(); docs.push({ id, tipo, cart: [] }); activarTab(id); }
+    function crearNuevoDoc() {
+        const id = Date.now();
+        docs.push({ id, tipo: (vistaActual === 'COMPRAS' ? 'ENTRADA' : 'SALIDA'), cart: [] });
+        activarTab(id);
+    }
+
     function activarTab(id) { activeId = id; renderTabs(); renderCart(); }
-    function cerrarTab(id, e) { e.stopPropagation(); docs = docs.filter(d => d.id !== id); if(docs.length === 0) nuevaRemision('SALIDA'); else activarTab(docs[docs.length-1].id); }
-    function renderTabs() { document.getElementById('tabs-header').innerHTML = docs.map(d => `<div class="tab-item ${d.id === activeId ? 'active' : ''}" onclick="activarTab(${d.id})">${d.tipo === 'SALIDA' ? 'Venta' : 'Compra'} <span class="ms-2 text-muted" onclick="cerrarTab(${d.id}, event)">✕</span></div>`).join(''); }
+
+    function cerrarTab(id, e) {
+        e.stopPropagation();
+        docs = docs.filter(d => d.id !== id);
+        if(docs.length === 0) crearNuevoDoc(); else activarTab(docs[docs.length-1].id);
+    }
+
+    function renderTabs() {
+        document.getElementById('tabs-header').innerHTML = docs.filter(d => (vistaActual === 'COMPRAS' ? d.tipo==='ENTRADA' : d.tipo==='SALIDA')).map(d => `
+            <div class="tab-item ${d.id === activeId ? 'active' : ''}" onclick="activarTab(${d.id})">
+                ${d.tipo === 'SALIDA' ? 'Venta' : 'Compra'} <span class="ms-2 text-muted" onclick="cerrarTab(${d.id}, event)">✕</span>
+            </div>`).join('');
+    }
 
     async function buscar(v, exact = false) {
         const resDiv = document.getElementById('results');
         if(v.length < 1) { resDiv.style.display='none'; return; }
         const r = await fetch(`${VAULT.U}/rest/v1/productos?or=(descripcion.ilike.*${v}*,codigo.eq.${v})&limit=10`, { headers });
         const d = await r.json();
-        if((exact || (d.length === 1 && d.codigo == v)) && d.length > 0) {
-            const item = d.find(i => i.codigo == v) || d[0];
-            add(item); document.getElementById('buscador').value = '';
+        if((exact || d.length === 1 && d.codigo == v) && d.length > 0) {
+            add(d.find(i=>i.codigo==v) || d[0]); document.getElementById('buscador').value = '';
             resDiv.style.display = 'none';
         } else {
             resDiv.innerHTML = d.map(x => `<div class="res-item" onclick="add(${JSON.stringify(x).replace(/"/g, '&quot;')})"><span>${x.descripcion}</span><b>$${parseInt(x.precio_1)}</b></div>`).join('');
@@ -150,7 +179,14 @@
     }
 
     function cerrarBuscador() { document.getElementById('results').style.display = 'none'; }
-    function add(x) { const doc = docs.find(d => d.id === activeId); const ex = doc.cart.find(i => i.codigo === x.codigo); ex ? ex.qty++ : doc.cart.push({...x, qty: 1}); cerrarBuscador(); document.getElementById('buscador').value = ''; renderCart(); }
+
+    function add(x) {
+        const doc = docs.find(d => d.id === activeId);
+        const ex = doc.cart.find(i => i.codigo === x.codigo);
+        ex ? ex.qty++ : doc.cart.push({...x, qty: 1});
+        cerrarBuscador(); document.getElementById('buscador').value = ''; renderCart();
+    }
+
     function renderCart() {
         const doc = docs.find(d => d.id === activeId);
         let t = 0;
@@ -158,48 +194,72 @@
             const sub = Math.round(x.precio_1 * x.qty); t += sub;
             return `<div class="item-row">
                 <span class="small text-muted">${x.codigo}</span><span class="fw-bold">${x.descripcion}</span>
-                <input type="number" class="form-control form-control-sm" value="${x.precio_1}" onchange="docs.find(d => d.id === activeId).cart[${i}].precio_1=this.value;renderCart()">
-                <input type="number" class="form-control form-control-sm" step="0.001" value="${x.qty}" onchange="docs.find(d => d.id === activeId).cart[${i}].qty=this.value;renderCart()">
+                <input type="number" class="form-control form-control-sm" value="${x.precio_1}" onchange="actualizarItem(${i}, 'precio_1', this.value)">
+                <input type="number" class="form-control form-control-sm" step="0.001" value="${x.qty}" onchange="actualizarItem(${i}, 'qty', this.value)">
                 <span class="text-end fw-bold text-danger">$${sub.toLocaleString()}</span>
-                <button class="btn btn-sm text-danger" onclick="docs.find(d => d.id === activeId).cart.splice(${i},1);renderCart()">✕</button>
+                <button class="btn btn-sm text-danger" onclick="docs.find(d=>d.id==${activeId}).cart.splice(${i},1);renderCart()">✕</button>
             </div>`;
         }).join('');
         document.getElementById('total-val').innerText = Math.round(t).toLocaleString();
     }
 
-    function abrirPagos() { if(docs.find(d=>d.id===activeId).cart.length > 0) new bootstrap.Modal(document.getElementById('modal-pagos')).show(); }
+    function actualizarItem(idx, campo, val) { docs.find(d => d.id === activeId).cart[idx][campo] = parseFloat(val); renderCart(); }
 
-    async function finalizar(metodo) {
+    function abrirAccion() {
         const doc = docs.find(d => d.id === activeId);
-        const res = await fetch(`${VAULT.U}/rest/v1/rpc/guardar_remision_venta`, {
-            method: 'POST', headers,
-            body: JSON.stringify({ items: doc.cart, p_caja: cajaActual, p_user: uActivo, p_metodo: metodo })
-        });
-        if(res.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('modal-pagos')).hide();
-            alert("✅ Venta Guardada: " + metodo);
-            docs = docs.filter(d => d.id !== activeId);
-            if(docs.length === 0) nuevaRemision('SALIDA'); else activarTab(docs[docs.length-1].id);
-        } else alert("Error procesando pago.");
+        if(doc.tipo === 'SALIDA') new bootstrap.Modal(document.getElementById('modal-pagos')).show();
+        else if(confirm("¿Guardar esta Remisión de Compra?")) procesarFinal('COMPRA');
     }
 
-    async function guardarMovCaja() {
-        const data = {
-            cajero: uActivo, base_inicial: document.getElementById('base_inicial').value,
-            prestamo_sarah: document.getElementById('prestamo_sarah').value, retiro_sarah: document.getElementById('retiro_sarah').value,
-            venta_nequi: document.getElementById('venta_nequi').value, venta_breb_qr: document.getElementById('venta_breb_qr').value,
-            venta_datafono: document.getElementById('venta_datafono').value, base_final: document.getElementById('base_final').value,
-            estado_turno: 'ABIERTO'
-        };
-        await fetch(`${VAULT.U}/rest/v1/movimientos_caja`, { method:'POST', headers, body: JSON.stringify(data)});
-        alert("📊 Movimiento de Turno Guardado.");
+    async function procesarFinal(metodo) {
+        const doc = docs.find(d => d.id === activeId);
+        const rpc = doc.tipo === 'SALIDA' ? 'guardar_remision_venta' : 'guardar_remision_compra';
+        const res = await fetch(`${VAULT.U}/rest/v1/rpc/${rpc}`, {
+            method: 'POST', headers,
+            body: JSON.stringify({ items: doc.cart, p_terminal: cajaActual, p_usuario: uActivo, p_tipo_movimiento: doc.tipo, p_metodo_pago: metodo })
+        });
+        if(res.ok) {
+            if(doc.tipo === 'SALIDA') bootstrap.Modal.getInstance(document.getElementById('modal-pagos')).hide();
+            alert("✅ Procesado con Éxito");
+            docs = docs.filter(d => d.id !== activeId);
+            if(docs.length === 0) crearNuevoDoc(); else activarTab(docs[docs.length-1].id);
+        }
     }
 
     function setVista(v) {
-        document.getElementById('view-pos').style.display = v === 'POS' ? 'block' : 'none';
+        vistaActual = v;
+        document.getElementById('view-pos').style.display = (v === 'VENTAS' || v === 'COMPRAS') ? 'block' : 'none';
         document.getElementById('view-caja').style.display = v === 'CAJA' ? 'block' : 'none';
         document.getElementById('view-clientes').style.display = v === 'CLIENTES' ? 'block' : 'none';
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.getElementById(`l-${v.toLowerCase()}`).classList.add('active');
+        if(v === 'VENTAS' || v === 'COMPRAS') {
+            document.getElementById('btn-nuevo-doc').innerText = v === 'VENTAS' ? '+ NUEVA VENTA' : '+ NUEVA COMPRA';
+            document.getElementById('btn-finalizar').innerText = v === 'VENTAS' ? 'COBRAR (F8)' : 'GUARDAR COMPRA';
+            renderTabs(); renderCart();
+        }
         if(v === 'CLIENTES') cargarClientes();
+    }
+
+    async function enviarCierreStock() {
+        const hoy = new Date().toISOString().split('T');
+        // Obtener Stock Bajo (< 5) y Stock Cero
+        const rStock = await fetch(`${VAULT.U}/rest/v1/productos?or=(stock.eq.0,stock.lt.5)&select=descripcion,stock`, { headers });
+        const pStock = await rStock.json();
+        
+        let cuerpo = `REPORTE DE CIERRE Y STOCK - ${hoy}%0A%0A`;
+        cuerpo += `❌ PRODUCTOS EN CERO STOCK:%0A`;
+        cuerpo += pStock.filter(i=>i.stock <= 0).map(i=>`- ${i.descripcion}`).join('%0A') || 'Ninguno';
+        cuerpo += `%0A%0A⚠️ PRODUCTOS STOCK BAJO (<5):%0A`;
+        cuerpo += pStock.filter(i=>i.stock > 0 && i.stock < 5).map(i=>`- ${i.descripcion} (${i.stock} un)`).join('%0A') || 'Ninguno';
+        
+        window.open(`mailto:sarita.6421@://gmail.com y Abastecimiento ${hoy}&body=${cuerpo}`);
+    }
+
+    async function guardarMovCaja() {
+        const data = { cajero: uActivo, base_inicial: document.getElementById('base_inicial').value, prestamo_sarah: document.getElementById('prestamo_sarah').value, retiro_sarah: document.getElementById('retiro_sarah').value, venta_nequi: document.getElementById('venta_nequi').value, venta_breb_qr: document.getElementById('venta_breb_qr').value, venta_datafono: document.getElementById('venta_datafono').value, base_final: document.getElementById('base_final').value, estado_turno: 'ABIERTO' };
+        await fetch(`${VAULT.U}/rest/v1/movimientos_caja`, { method:'POST', headers, body: JSON.stringify(data)});
+        alert("📊 Cuadre Guardado");
     }
 
     async function cargarClientes() {
@@ -212,8 +272,6 @@
         const d = prompt("Doc:"), n = prompt("Nombre:"), t = prompt("Tel:"), e = prompt("Email:"), di = prompt("Dir:");
         if(d && n) fetch(`${VAULT.U}/rest/v1/terceros`, { method:'POST', headers, body: JSON.stringify({documento:d, nombre:n, telefono:t, email:e, direccion:di})}).then(cargarClientes);
     }
-
-    function enviarCierre() { window.open(`mailto:sarita.6421@://gmail.com de reporte diario.`); }
 </script>
 </body>
 </html>
