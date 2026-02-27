@@ -2,32 +2,42 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>GUERRERO ERP v2.8.0 - Master Edition</title>
+    <title>GUERRERO ERP v2.8.0 - Multitarea</title>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <style>
         :root { --g-red: #e31e24; --g-dark: #1a1a1a; }
         body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; margin: 0; }
         #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--g-dark); }
-        .login-card { background: white; padding: 40px; border-radius: 20px; width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .login-card { background: white; padding: 40px; border-radius: 20px; width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         #main-app { display: none; min-height: 100vh; }
         .sidebar { width: 260px; background: var(--g-dark); color: white; position: fixed; height: 100vh; z-index: 1000; }
         .nav-link { color: #adb5bd; padding: 12px 25px; cursor: pointer; text-decoration: none; display: block; border-left: 4px solid transparent; }
         .nav-link.active { background: #2a2a2a; color: white !important; border-left-color: var(--g-red); }
         main { margin-left: 260px; flex-grow: 1; padding: 25px; width: calc(100% - 260px); }
-        .workspace { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); min-height: 75vh; }
-        .item-row { display: grid; grid-template-columns: 1fr 3fr 1.2fr 1fr 1.2fr 40px; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
-        #results { position: absolute; width: 100%; z-index: 2000; background: white; border: 1px solid #ddd; max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; }
-        .res-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        .total-box { border-left: 5px solid var(--g-red); background: #fff; padding: 20px; border-radius: 10px; position: sticky; top: 20px; }
+        
+        /* SISTEMA DE PESTAÑAS */
+        .tabs-bar { display: flex; gap: 5px; margin-bottom: 10px; overflow-x: auto; }
+        .tab-item { background: #dee2e6; padding: 8px 20px; border-radius: 10px 10px 0 0; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 10px; min-width: 120px; }
+        .tab-item.active { background: white; border-top: 3px solid var(--g-red); color: var(--g-red); }
+        .tab-close { color: #999; font-size: 1.2rem; }
+        
+        .workspace { background: white; border-radius: 0 15px 15px 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); min-height: 70vh; }
+        .item-row { display: grid; grid-template-columns: 1fr 3fr 1fr 1fr 1fr 40px; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+        #results { position: absolute; width: 100%; z-index: 2000; background: white; border: 1px solid #ddd; max-height: 250px; overflow-y: auto; }
+        .total-box { border-left: 5px solid var(--g-red); background: #fff; padding: 20px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
-    <div class="login-card shadow-lg text-center">
+    <div class="login-card text-center">
         <h3 class="fw-bold mb-1">GUERRERO <span class="text-danger">ERP</span></h3>
-        <p class="text-muted small mb-4">v2.8.0 | SEGURO</p>
-        <select id="select-caja" class="form-select mb-3 fw-bold"><option>Caja 1 - Mañana</option><option>Caja 1 - Tarde</option></select>
+        <select id="select-caja" class="form-select mb-3 fw-bold">
+            <option>Caja 1 - Mañana</option><option>Caja 1 - Tarde</option>
+            <option>Caja 2 - Mañana</option><option>Caja 2 - Tarde</option>
+            <option>Caja 3 - Mañana</option><option>Caja 3 - Tarde</option>
+            <option>Caja 4 - Mañana</option><option>Caja 4 - Tarde</option>
+        </select>
         <input type="text" id="u" class="form-control mb-2" placeholder="Usuario">
         <input type="password" id="p" class="form-control mb-4" placeholder="Contraseña">
         <button class="btn btn-danger w-100 fw-bold py-3" onclick="login()">INGRESAR</button>
@@ -36,48 +46,42 @@
 
 <div id="main-app">
     <div class="sidebar">
-        <div class="p-4 border-bottom border-secondary mb-3">
-            <h5 class="fw-bold text-white mb-0">GUERRERO ERP</h5>
-            <small id="info-u" class="text-secondary small">Cajero: ---</small>
-        </div>
+        <div class="p-4 border-bottom border-secondary mb-3"><h5 class="fw-bold text-white mb-0">GUERRERO ERP</h5><small id="info-u" class="text-secondary">---</small></div>
         <div class="nav flex-column">
-            <div class="nav-link active" id="btn-S" onclick="setModulo('SALIDA')">📦 Remisión de Venta</div>
-            <div class="nav-link" id="btn-E" onclick="setModulo('ENTRADA')">📥 Remisión de Compra</div>
-            <div class="nav-link text-info mt-4" onclick="enviarCierreGmail()">📧 Cierre y Alertas (Gmail)</div>
+            <div class="nav-link active" onclick="nuevaRemision('SALIDA')">➕ Nueva Venta (Salida)</div>
+            <div class="nav-link" onclick="nuevaRemision('ENTRADA')">➕ Nueva Compra (Entrada)</div>
+            <div class="nav-link" onclick="setModulo('CLIENTES')">👤 Clientes</div>
+            <div class="nav-link text-info mt-4" onclick="enviarCierre()">📧 Cierre Gmail</div>
             <div class="nav-link text-warning mt-2" onclick="location.reload()">🔒 Salir</div>
         </div>
     </div>
 
     <main>
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 id="m-title" class="fw-bold mb-0">Remisión de Venta</h2>
-            <div id="reloj" class="h4 font-monospace text-danger bg-white px-3 py-2 rounded shadow-sm border">00:00:00</div>
-        </div>
-
-        <div class="row">
+        <div id="tabs-header" class="tabs-bar"></div>
+        <div id="view-principal" class="row">
             <div class="col-md-9">
                 <div class="workspace">
                     <div class="position-relative mb-3">
                         <input type="text" id="buscador" class="form-control form-control-lg border-danger" 
-                               placeholder="🔍 Código (2+ dig) o Producto..." oninput="buscar(this.value)"
-                               onkeypress="if(event.key==='Enter'){event.preventDefault();buscar(this.value,true)}">
-                        <div id="results" style="display:none;"></div>
+                               placeholder="🔍 Escanee código o busque nombre..." oninput="buscar(this.value)">
+                        <div id="results" style="display:none;" class="shadow border"></div>
                     </div>
-                    <div class="item-row bg-light fw-bold small rounded">
-                        <span>CÓDIGO</span><span>PRODUCTO</span><span>PRECIO</span><span>CANT</span><span class="text-end">TOTAL</span><span></span>
-                    </div>
-                    <div id="lista-items" class="mt-2"></div>
+                    <div id="lista-items"></div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="total-box shadow-sm border text-center">
-                    <label class="small fw-bold text-secondary">TOTAL DOCUMENTO</label>
+                    <label class="small fw-bold">TOTAL DOC</label>
                     <h1 class="fw-bold text-danger my-2">$<span id="total-val">0</span></h1>
-                    <button class="btn btn-danger btn-lg w-100 py-3 fw-bold mb-2 shadow" onclick="finalizar()">COBRAR / GUARDAR</button>
-                    <button class="btn btn-outline-dark w-100 mb-2" onclick="reimprimir()">🔄 RE-IMPRIMIR</button>
-                    <button class="btn btn-outline-secondary w-100" onclick="if(confirm('¿Limpiar?')){cart=[];render();}">CANCELAR</button>
+                    <button class="btn btn-danger btn-lg w-100 py-3 fw-bold mb-2 shadow" onclick="finalizar()">COBRAR (F8)</button>
+                    <button class="btn btn-outline-dark w-100 mb-2" onclick="reimprimir()">🔄 ÚLTIMO</button>
                 </div>
             </div>
+        </div>
+        <!-- Vista Clientes -->
+        <div id="view-clientes" style="display:none;" class="workspace">
+            <div class="d-flex justify-content-between mb-3"><h4>Clientes</h4><button class="btn btn-danger" onclick="nuevoCliente()">+ Nuevo</button></div>
+            <table class="table table-sm"><thead class="table-dark"><tr><th>Doc</th><th>Nombre</th><th>Tel</th></tr></thead><tbody id="lista-cli-tabla"></tbody></table>
         </div>
     </main>
 </div>
@@ -85,141 +89,129 @@
 <script>
     const VAULT = { U: "https://tzseklsayxaldtqatwuq.supabase.co", K: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5" };
     const headers = { 'apikey': VAULT.K, 'Authorization': `Bearer ${VAULT.K}`, 'Content-Type': 'application/json' };
-    
-    let cart = [], modulo = 'SALIDA', uActivo = '', caja = '', searchTimeout = null;
-    const beep = new Audio('https://www.soundjay.com');
+    let docs = [], activeId = 0, uActivo = '', caja = '';
 
     async function login() {
-        const user = document.getElementById('u').value.trim();
-        const pass = document.getElementById('p').value.trim();
+        const user = document.getElementById('u').value;
+        const pass = document.getElementById('p').value;
         const res = await fetch(`${VAULT.U}/rest/v1/usuarios?usuario=eq.${user}&password=eq.${pass}&select=*`, { headers });
         const d = await res.json();
-        if (d.length > 0) {
+        if(d.length > 0) {
             uActivo = d[0].usuario; caja = document.getElementById('select-caja').value;
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'flex';
             document.getElementById('info-u').innerText = "Cajero: " + uActivo;
-        } else alert("Acceso Incorrecto");
+            nuevaRemision('SALIDA');
+        } else alert("Error");
     }
 
-    async function buscar(v, exact = false) {
-        if(v.length < 2) { document.getElementById('results').style.display='none'; return; }
+    function nuevaRemision(tipo) {
+        const id = Date.now();
+        docs.push({ id, tipo, cart: [], total: 0 });
+        activarTab(id);
+    }
+
+    function activarTab(id) {
+        activeId = id;
+        document.getElementById('view-principal').style.display = 'flex';
+        document.getElementById('view-clientes').style.display = 'none';
+        renderTabs();
+        renderCart();
+    }
+
+    function cerrarTab(id, e) {
+        e.stopPropagation();
+        docs = docs.filter(d => d.id !== id);
+        if(docs.length === 0) nuevaRemision('SALIDA');
+        else if(activeId === id) activarTab(docs[0].id);
+        else renderTabs();
+    }
+
+    function renderTabs() {
+        document.getElementById('tabs-header').innerHTML = docs.map(d => `
+            <div class="tab-item ${d.id === activeId ? 'active' : ''}" onclick="activarTab(${d.id})">
+                ${d.tipo === 'SALIDA' ? '📦 Venta' : '📥 Compra'} 
+                <span class="tab-close" onclick="cerrarTab(${d.id}, event)">×</span>
+            </div>`).join('');
+    }
+
+    async function buscar(v) {
+        if(v.length < 1) { document.getElementById('results').style.display='none'; return; }
         const r = await fetch(`${VAULT.U}/rest/v1/productos?or=(descripcion.ilike.*${v}*,codigo.eq.${v})&limit=10`, { headers });
         const d = await r.json();
-        if ((exact || (v.length <= 4 && d.length === 1)) && d.length > 0) {
-            add(d[0] || d); document.getElementById('buscador').value = '';
-            document.getElementById('results').style.display = 'none';
-        } else mostrarRes(d);
-    }
-
-    function mostrarRes(d) {
+        if(v.length >= 2 && d.length === 1 && d[0].codigo === v) { add(d[0]); return; }
+        
         const resDiv = document.getElementById('results');
-        resDiv.innerHTML = d.map(x => `<div class="res-item" onclick='add(${JSON.stringify(x)})'>
-            <span><b>${x.descripcion}</b> (${x.codigo})</span>
-            <span class="text-danger fw-bold">$${parseInt(x.precio_1 || 0).toLocaleString()}</span>
-        </div>`).join('');
-        resDiv.style.display = d.length > 0 ? 'block' : 'none';
+        resDiv.innerHTML = d.map(x => `<div class="res-item" onclick='add(${JSON.stringify(x)})'><span>${x.descripcion}</span><b>$${parseInt(x.precio_1).toLocaleString()}</b></div>`).join('');
+        resDiv.style.display = 'block';
     }
 
     function add(x) {
-        beep.play();
-        const ex = cart.find(i => i.codigo === x.codigo);
-        ex ? ex.qty++ : cart.push({...x, qty: 1});
+        const doc = docs.find(d => d.id === activeId);
+        const ex = doc.cart.find(i => i.codigo === x.codigo);
+        ex ? ex.qty++ : doc.cart.push({...x, qty: 1});
         document.getElementById('results').style.display='none';
         document.getElementById('buscador').value = '';
-        document.getElementById('buscador').focus();
-        render();
+        renderCart();
     }
 
-    function render() {
+    function renderCart() {
+        const doc = docs.find(d => d.id === activeId);
         let t = 0;
-        document.getElementById('lista-items').innerHTML = cart.map((x, i) => {
-            const p = parseFloat(x.precio_1) || 0; const s = p * x.qty; t += s;
+        document.getElementById('lista-items').innerHTML = doc.cart.map((x, i) => {
+            const sub = x.precio_1 * x.qty; t += sub;
             return `<div class="item-row">
-                <span class="text-muted">${x.codigo}</span><span class="fw-bold">${x.descripcion}</span>
-                <input type="number" class="form-control form-control-sm" value="${p}" onchange="cart[${i}].precio_1=this.value;render()">
-                <input type="number" class="form-control form-control-sm" value="${x.qty}" onchange="cart[${i}].qty=this.value;render()">
-                <span class="text-end text-danger fw-bold">$${s.toLocaleString()}</span>
-                <button class="btn btn-sm text-danger" onclick="cart.splice(${i},1);render()">✕</button>
+                <span>${x.codigo}</span><span class="fw-bold">${x.descripcion}</span>
+                <input type="number" class="form-control" value="${x.precio_1}" onchange="docs.find(d=>d.id==${activeId}).cart[${i}].precio_1=this.value;renderCart()">
+                <input type="number" class="form-control" value="${x.qty}" onchange="docs.find(d=>d.id==${activeId}).cart[${i}].qty=this.value;renderCart()">
+                <span class="fw-bold">$${sub.toLocaleString()}</span>
+                <button class="btn btn-sm text-danger" onclick="docs.find(d=>d.id==${activeId}).cart.splice(${i},1);renderCart()">✕</button>
             </div>`;
         }).join('');
         document.getElementById('total-val').innerText = t.toLocaleString();
     }
 
     async function finalizar() {
-        if(!cart.length) return;
-        const met = modulo === 'SALIDA' ? (confirm("¿Efectivo? (Aceptar: EFECTIVO / Cancelar: TRANSF)") ? "EFECTIVO" : "TRANSFERENCIA") : "INGRESO COMPRA";
-        const rpc = modulo === 'SALIDA' ? 'guardar_remision_venta' : 'guardar_remision_compra';
-
-        try {
-            const res = await fetch(`${VAULT.U}/rest/v1/rpc/${rpc}`, {
-                method: 'POST', headers,
-                body: JSON.stringify({ items: cart, p_caja: caja, p_user: uActivo, p_metodo: met })
-            });
-            const num = await res.json();
-            if(!res.ok) throw new Error("Error en Servidor");
-
-            const ticket = { items: [...cart], num, tipo: modulo, fecha: new Date().toLocaleString(), met, cajero: uActivo };
-            localStorage.setItem('ultimo', JSON.stringify(ticket));
-            
-            alert(`✅ ${modulo} EXITOSA - Nro: ${num}`);
-            if(confirm("📄 ¿Imprimir Soporte Detallado?")) imprimir(ticket);
-
-            cart = []; render();
-            document.getElementById('buscador').focus();
-        } catch (e) { alert("❌ Error: " + e.message); }
+        const doc = docs.find(d => d.id === activeId);
+        if(!doc.cart.length) return;
+        const met = doc.tipo==='SALIDA' ? (confirm("¿Paga EFECTIVO?")?"EFECTIVO":"TRANSFERENCIA") : "COMPRA";
+        const rpc = doc.tipo==='SALIDA' ? 'guardar_remision_venta' : 'guardar_remision_compra';
+        
+        const res = await fetch(`${VAULT.U}/rest/v1/rpc/${rpc}`, { method: 'POST', headers, body: JSON.stringify({ items: doc.cart, p_caja: caja, p_user: uActivo, p_metodo: met }) });
+        const num = await res.json();
+        if(res.ok) {
+            alert(`✅ ${doc.tipo} #${num} EXITOSA`);
+            localStorage.setItem('ultimo', JSON.stringify({ ...doc, num, met, fecha: new Date().toLocaleString() }));
+            cerrarTab(activeId, {stopPropagation:()=>{}});
+        }
     }
 
-    function imprimir(d) {
-        const win = window.open('', '', 'width=300,height=600');
-        const tit = d.tipo === 'SALIDA' ? 'REMISION DE VENTA' : 'REMISION DE COMPRA';
-        win.document.write(`<pre style="font-family:monospace;font-size:11px;">
-       GUERRERO ERP v2.8.0
-      ${tit} #${d.num}
---------------------------------
-Fecha: ${d.fecha} | Cajero: ${d.cajero}
---------------------------------
-CANT  COD    DESCRIPCION   TOTAL
-${d.items.map(i => `${i.qty.toString().padEnd(4)} ${i.codigo.padEnd(6)} ${i.descripcion.substring(0,10).padEnd(10)} $${(i.precio_1*i.qty).toLocaleString().padStart(7)}`).join('\n')}
---------------------------------
-TOTAL: $${d.items.reduce((a,b)=>a+(b.precio_1*b.qty),0).toLocaleString().padStart(12)}
-METODO: ${d.met}
---------------------------------
-    ¡GRACIAS POR SU COMPRA!
-</pre>`);
+    function reimprimir() {
+        const d = JSON.parse(localStorage.getItem('ultimo'));
+        if(!d) return;
+        const win = window.open('', '', 'width=300,height=400');
+        win.document.write(`<pre style="font-family:monospace;font-size:11px;">GUERRERO ERP - ${d.tipo} #${d.num}\nFecha: ${d.fecha}\nTotal: $${d.cart.reduce((a,b)=>a+(b.precio_1*b.qty),0).toLocaleString()}\nMetodo: ${d.met}</pre>`);
         win.print(); win.close();
     }
 
-    function reimprimir() { const d = JSON.parse(localStorage.getItem('ultimo')); if(d) imprimir(d); else alert("No hay ticket previo"); }
+    async function setModulo(m) {
+        if(m==='CLIENTES') {
+            document.getElementById('view-principal').style.display='none';
+            document.getElementById('view-clientes').style.display='block';
+            const r = await fetch(`${VAULT.U}/rest/v1/terceros?select=*`, { headers });
+            const d = await r.json();
+            document.getElementById('lista-cli-tabla').innerHTML = d.map(c=>`<tr><td>${c.documento}</td><td>${c.nombre}</td><td>${c.telefono}</td></tr>`).join('');
+        }
+    }
 
-    async function enviarCierreGmail() {
+    async function enviarCierre() {
         const hoy = new Date().toISOString().split('T')[0];
-        // 1. Obtener Ventas de hoy
-        const resV = await fetch(`${VAULT.U}/rest/v1/remision_de_venta?fecha=gte.${hoy}&select=consecutivo,metodo_pago,fecha`, { headers });
-        const ventas = await resV.json();
-        
-        // 2. Obtener Stock Crítico (Menos de 5 unidades)
-        const resS = await fetch(`${VAULT.U}/rest/v1/productos?stock=lt.5&select=descripcion,stock`, { headers });
-        const critico = await resS.json();
-
-        let cuerpo = `*REPORTE DE CIERRE - ${hoy}*%0A%0A`;
-        cuerpo += `💰 *TOTAL DOCUMENTOS:* ${ventas.length}%0A`;
-        cuerpo += `Cajero Responsable: ${uActivo}%0A%0A`;
-        cuerpo += `⚠️ *ALERTAS DE STOCK (BAJO):*%0A`;
-        cuerpo += critico.map(i => `- ${i.descripcion}: Quedan ${i.stock} un.`).join('%0A') || 'Sin alertas';
-        
-        window.open(`mailto:sarita.6421@://gmail.com GUERRERO ERP ${hoy}&body=${cuerpo}`);
+        const r = await fetch(`${VAULT.U}/rest/v1/remision_de_venta?fecha=gte.${hoy}&select=monto,metodo_pago`, { headers });
+        const v = await r.json();
+        const ef = v.filter(i=>i.metodo_pago==='EFECTIVO').reduce((a,b)=>a+b.monto,0);
+        const tr = v.filter(i=>i.metodo_pago==='TRANSFERENCIA').reduce((a,b)=>a+b.monto,0);
+        window.open(`mailto:sarita.6421@://gmail.com ${hoy}&body=Efectivo: $${ef.toLocaleString()}%0ATransf: $${tr.toLocaleString()}`);
     }
-
-    function setModulo(m) {
-        modulo = m;
-        document.getElementById('m-title').innerText = `Remisión de ${m === 'SALIDA' ? 'Venta' : 'Compra'}`;
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        document.getElementById(`btn-${m.substring(0,1)}`).classList.add('active');
-        cart = []; render();
-    }
-
-    setInterval(() => document.getElementById('reloj').innerText = new Date().toLocaleTimeString(), 1000);
 </script>
 </body>
 </html>
