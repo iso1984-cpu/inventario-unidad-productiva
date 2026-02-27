@@ -3,22 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUERRERO ERP v2.3.0 - Control de Remisiones</title>
+    <title>GUERRERO ERP v2.3.1 - Control de Remisiones</title>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net">
     <style>
         :root { --g-red: #e31e24; --g-dark: #1a1a1a; --g-light: #f8fafc; }
-        body { background: var(--g-dark); font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; }
+        body { background: var(--g-dark); font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
         
-        /* Login */
-        #login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2a2a2a 0%, #1a1a1a 100%); }
-        .login-card { background: white; padding: 40px; border-radius: 20px; width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        /* Login - Corregido para visualización de Select */
+        #login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2a2a2a 0%, #1a1a1a 100%); padding: 20px; }
+        .login-card { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); position: relative; z-index: 10; }
+        
+        /* Asegura que el selector de caja no se oculte */
+        #select-caja { cursor: pointer; border: 2px solid var(--g-red) !important; height: 50px; font-size: 1rem; }
         
         /* App Principal */
         #main-app { display: none; background: var(--g-light); height: 100vh; }
-        .sidebar { background: var(--g-dark); color: white; width: 260px; height: 100vh; position: fixed; border-right: 1px solid #333; }
-        .nav-link { color: #94a3b8; padding: 15px 20px; cursor: pointer; transition: 0.3s; border-left: 4px solid transparent; }
-        .nav-link:hover, .nav-link.active { background: rgba(227, 30, 36, 0.1); color: white; border-left-color: var(--g-red); }
+        .sidebar { background: var(--g-dark); color: white; width: 260px; height: 100vh; position: fixed; border-right: 1px solid #333; z-index: 100; }
+        .nav-link { color: #94a3b8; padding: 15px 20px; cursor: pointer; transition: 0.3s; border-left: 4px solid transparent; text-decoration: none; display: block; }
+        .nav-link:hover, .nav-link.active { background: rgba(227, 30, 36, 0.1); color: white !important; border-left-color: var(--g-red); }
         main { margin-left: 260px; padding: 25px; height: 100vh; display: flex; flex-direction: column; }
         
         /* Tablas de Remisión */
@@ -29,8 +32,8 @@
         .item-row { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr 40px; gap: 15px; align-items: center; padding: 12px; border-bottom: 1px solid #edf2f7; }
         .item-row:hover { background: #f8fafc; }
         
-        #search-results { position: absolute; z-index: 1000; width: 100%; max-height: 300px; overflow-y: auto; }
-        .badge-turno { background: var(--g-red); padding: 5px 12px; border-radius: 50px; font-size: 0.8rem; }
+        #search-results { position: absolute; z-index: 2000; width: 100%; max-height: 250px; overflow-y: auto; background: white; border: 1px solid #ddd; }
+        .pointer { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -38,10 +41,15 @@
 <!-- PASO 1: LOGIN Y SELECCIÓN DE TURNO -->
 <div id="login-screen">
     <div class="login-card text-center">
-        <h4 class="fw-bold mb-4">GUERRERO <span class="text-danger">ERP v2.3.0</span></h4>
+        <h4 class="fw-bold mb-4">GUERRERO <span class="text-danger">ERP v2.3.1</span></h4>
+        
+        <div class="alert alert-dark py-2 small mb-4 text-success font-monospace text-start" style="font-size: 0.75rem;">
+            [INIT] Túnel de seguridad activo...<br>[NET] Esperando credenciales nativas...
+        </div>
+
         <div class="mb-3 text-start">
-            <label class="small fw-bold mb-1 text-muted">SELECCIONAR CAJA Y TURNO:</label>
-            <select id="select-caja" class="form-select border-danger fw-bold">
+            <label class="small fw-bold mb-1 text-muted text-uppercase">Seleccionar Caja y Turno:</label>
+            <select id="select-caja" class="form-select fw-bold">
                 <option value="Caja 1 - Mañana">Caja 1 - Mañana</option>
                 <option value="Caja 1 - Tarde">Caja 1 - Tarde</option>
                 <option value="Caja 2 - Mañana">Caja 2 - Mañana</option>
@@ -52,9 +60,11 @@
                 <option value="Caja 4 - Tarde">Caja 4 - Tarde</option>
             </select>
         </div>
-        <input type="email" id="user-email" class="form-control mb-2" placeholder="Usuario / Correo">
-        <input type="password" id="user-pass" class="form-control mb-3" placeholder="Contraseña">
-        <button class="btn btn-danger w-100 fw-bold py-2" onclick="login()">INICIAR OPERACIÓN</button>
+
+        <input type="email" id="user-email" class="form-control mb-2 py-2" placeholder="Usuario / Correo">
+        <input type="password" id="user-pass" class="form-control mb-4 py-2" placeholder="Contraseña">
+        
+        <button class="btn btn-danger w-100 fw-bold py-3" onclick="login()">AUTENTICAR TURNO 5H</button>
     </div>
 </div>
 
@@ -62,7 +72,7 @@
 <div id="main-app">
     <div class="sidebar">
         <div class="p-4 border-bottom border-secondary mb-3">
-            <h5 class="fw-bold m-0" id="step-title">G-ERP <span class="text-danger">v2.3.0</span></h5>
+            <h5 class="fw-bold m-0" id="step-title">G-ERP <span class="text-danger">v2.3.1</span></h5>
             <small id="terminal-display" class="text-secondary">Caja no asignada</small>
         </div>
         <div class="nav flex-column">
@@ -76,42 +86,35 @@
     <main>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold m-0" id="modulo-label">Remisión de Salida</h4>
-            <div id="reloj" class="fw-bold text-danger fs-5">00:00:00</div>
+            <div id="reloj" class="fw-bold text-danger fs-5 font-monospace">00:00:00</div>
         </div>
 
         <div class="remision-container">
-            <!-- PASO 2: BÚSQUEDA Y LISTADO -->
             <div class="item-list-section">
                 <div class="position-relative mb-3">
                     <input type="text" id="main-search" class="form-control form-control-lg border-danger" 
-                           placeholder="🔍 Buscar por Nombre o Escanear Código de Barras..." oninput="buscar(this.value)">
+                           placeholder="🔍 Buscar por Nombre o Código de Barras..." oninput="buscar(this.value)">
                     <div id="search-results" class="list-group shadow"></div>
                 </div>
                 
-                <div id="cart-header" class="item-row fw-bold text-muted small bg-light p-2 rounded mb-2">
+                <div class="item-row fw-bold text-muted small bg-light p-2 rounded mb-2">
                     <span>PRODUCTO</span><span>VALOR UNIT.</span><span>CANTIDAD</span><span class="text-end">SUBTOTAL</span><span></span>
                 </div>
-                <div id="cart-list" class="overflow-auto flex-grow-1">
-                    <!-- Aquí se inyectan los productos -->
-                </div>
+                <div id="cart-list" class="overflow-auto flex-grow-1"></div>
             </div>
 
-            <!-- PASO 3: RESUMEN Y FINALIZACIÓN -->
             <div class="summary-section text-center">
-                <p class="text-secondary small mb-1 uppercase fw-bold" id="total-label">TOTAL REMISIÓN DE SALIDA</p>
+                <p class="text-secondary small mb-1 fw-bold" id="total-label text-uppercase">TOTAL REMISIÓN</p>
                 <h1 class="fw-bold text-danger mb-4">$<span id="total-val">0</span></h1>
                 
-                <div id="pago-metodo-box" class="mb-3">
-                    <label class="small fw-bold d-block text-start mb-2">Forma de Gestión:</label>
-                    <select id="metodo-pago" class="form-select mb-3">
-                        <option value="EFECTIVO">Efectivo</option>
-                        <option value="NEQUI">Nequi</option>
-                        <option value="BANCO_B">Bancolombia</option>
-                        <option value="TRANSFERENCIA">Transferencia</option>
-                    </select>
-                </div>
+                <select id="metodo-pago" class="form-select mb-4 py-2 fw-bold border-danger text-center">
+                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="NEQUI">Nequi</option>
+                    <option value="BANCO_B">Bancolombia</option>
+                    <option value="TRANSFERENCIA">Transferencia</option>
+                </select>
 
-                <button class="btn btn-danger btn-lg w-100 py-3 fw-bold rounded-pill mb-3" onclick="procesarRemision()">
+                <button class="btn btn-danger btn-lg w-100 py-3 fw-bold rounded-pill mb-3 shadow" onclick="procesarRemision()">
                     FINALIZAR REMISIÓN
                 </button>
                 <button class="btn btn-outline-secondary w-100 rounded-pill btn-sm" onclick="location.reload()">CANCELAR</button>
@@ -130,28 +133,28 @@
     let cart = [], tipoModulo = 'SALIDA', total = 0, terminalActiva = '';
 
     function actualizarPaso(texto) {
-        document.getElementById('step-title').innerHTML = `G-ERP <span class="text-danger">v2.3.0</span><br><small style="font-size:0.6em; color:#94a3b8">${texto}</small>`;
+        document.getElementById('step-title').innerHTML = `G-ERP <span class="text-danger">v2.3.1</span><br><small style="font-size:0.6em; color:#94a3b8">${texto}</small>`;
     }
 
     function login() {
-        const user = document.getElementById('user-email').value;
-        const pass = document.getElementById('user-pass').value;
+        const user = document.getElementById('user-email').value.trim();
+        const pass = document.getElementById('user-pass').value.trim();
         terminalActiva = document.getElementById('select-caja').value;
 
+        // Credenciales estrictas
         if(user === "sarah.6421@gmail.com" && pass === "guerrero2026") {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             document.getElementById('terminal-display').innerText = `Terminal: ${terminalActiva}`;
-            actualizarPaso("Paso 1: Sistema Listo");
+            actualizarPaso("Paso 1: Sesión Iniciada");
         } else {
-            alert("Credenciales incorrectas");
+            alert("Credenciales incorrectas. Verifique usuario y contraseña.");
         }
     }
 
     function cambiarModulo(tipo) {
         tipoModulo = tipo;
         document.getElementById('modulo-label').innerText = `Remisión de ${tipo}`;
-        document.getElementById('total-label').innerText = `TOTAL REMISIÓN DE ${tipo}`;
         document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
         event.currentTarget.classList.add('active');
         cart = [];
@@ -163,13 +166,13 @@
         const resList = document.getElementById('search-results');
         if (val.length < 2) { resList.style.display = "none"; return; }
         
-        actualizarPaso("Paso 3: Buscando en Supabase...");
+        actualizarPaso("Buscando en Supabase...");
         const res = await fetch(`${VAULT.U}/rest/v1/productos?or=(nombre.ilike.*${val}*,ean.eq.${val})&select=*`, { headers });
         const data = await res.json();
         
         resList.innerHTML = data.map(p => `
             <button onclick='add(${JSON.stringify(p)})' class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                <span><b>${p.nombre}</b> <small class="text-muted">| Stock: ${p.stock}</small></span>
+                <span><b>${p.nombre}</b> <small class="text-muted">| EAN: ${p.ean || 'N/A'}</small></span>
                 <span class="badge bg-danger">$${p.precio1}</span>
             </button>`).join('');
         resList.style.display = "block";
@@ -205,28 +208,24 @@
     }
 
     async function procesarRemision() {
-        if(!cart.length) return alert("La remisión está vacía");
+        if(!cart.length) return alert("No hay productos cargados");
+        actualizarPaso(`Guardando ${tipoModulo}...`);
         
-        actualizarPaso(`Paso 4: Guardando ${tipoModulo}...`);
-        const metodo = document.getElementById('metodo-pago').value;
-
         try {
             for (let item of cart) {
-                // 1. Registro de Movimiento (Remisión)
-                const tabla = tipoModulo === 'SALIDA' ? 'salidas' : 'entradas'; 
+                const tabla = tipoModulo === 'SALIDA' ? 'salidas' : 'entradas';
                 await fetch(`${VAULT.U}/rest/v1/${tabla}`, { 
                     method: 'POST', 
                     headers, 
                     body: JSON.stringify({ 
                         producto: item.nombre, 
                         monto: item.current_price * item.qty, 
-                        metodo_pago: metodo,
+                        metodo_pago: document.getElementById('metodo-pago').value,
                         fecha: new Date().toISOString(), 
                         terminal: terminalActiva 
                     }) 
                 });
 
-                // 2. Ajuste de Inventario (Trazabilidad)
                 const nuevoStock = tipoModulo === 'SALIDA' ? (item.stock - item.qty) : (item.stock + item.qty);
                 await fetch(`${VAULT.U}/rest/v1/productos?id=eq.${item.id}`, {
                     method: 'PATCH',
@@ -234,10 +233,10 @@
                     body: JSON.stringify({ stock: nuevoStock })
                 });
             }
-            alert(`Remisión de ${tipoModulo} procesada con éxito.`);
+            alert(`✅ Remisión de ${tipoModulo} completada.`);
             location.reload();
         } catch (e) {
-            alert("Error al procesar la remisión.");
+            alert("Error de conexión con Supabase.");
         }
     }
 
