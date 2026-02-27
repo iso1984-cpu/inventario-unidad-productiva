@@ -2,25 +2,38 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>GUERRERO ERP v2.8.6 - Estabilidad Total</title>
+    <title>GUERRERO ERP v2.8.7 - Versión Final</title>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <style>
         :root { --g-red: #e31e24; --g-dark: #1a1a1a; }
-        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
+        
+        /* SIDEBAR */
         .sidebar { width: 260px; background: var(--g-dark); color: white; position: fixed; height: 100vh; z-index: 1000; }
         .nav-link { color: #adb5bd; padding: 12px 25px; cursor: pointer; text-decoration: none; display: block; border-left: 4px solid transparent; }
         .nav-link.active { background: #2a2a2a; color: white !important; border-left-color: var(--g-red); }
+        
         main { margin-left: 260px; padding: 25px; width: calc(100% - 260px); min-height: 100vh; }
-        .tabs-bar { display: flex; gap: 5px; margin-bottom: 10px; overflow-x: auto; }
+        
+        /* PESTAÑAS (MULTITAREA) */
+        .tabs-bar { display: flex; gap: 5px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px; }
         .tab-item { background: #dee2e6; padding: 10px 20px; border-radius: 10px 10px 0 0; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 10px; min-width: 140px; }
         .tab-item.active { background: white; border-top: 4px solid var(--g-red); color: var(--g-red); }
-        .workspace { background: white; border: 1px solid #ddd; border-radius: 0 15px 15px 15px; padding: 25px; min-height: 70vh; position: relative; }
-        .item-row { display: grid; grid-template-columns: 1fr 3fr 1.2fr 1.2fr 1.2fr 40px; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        .tab-close { color: #999; font-size: 1.2rem; line-height: 1; }
+        .tab-close:hover { color: var(--g-red); }
+
+        .workspace { background: white; border: 1px solid #ddd; border-radius: 0 15px 15px 15px; padding: 25px; min-height: 70vh; box-shadow: 0 5px 15px rgba(0,0,0,0.05); position: relative; }
+        
+        /* BUSCADOR */
         #results { position: absolute; width: 95%; z-index: 3000; background: white; border: 2px solid var(--g-red); max-height: 300px; overflow-y: auto; display: none; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .res-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
         .res-item:hover { background: #fff3f3; }
-        .pay-btn { height: 75px; font-weight: 800; font-size: 1.1rem; border-radius: 15px; border: none; transition: 0.2s; }
-        .pay-btn:hover { filter: brightness(0.9); transform: scale(1.02); }
+
+        .item-row { display: grid; grid-template-columns: 1fr 3fr 1.2fr 1.2fr 1.2fr 40px; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        
+        /* BOTONES PAGO */
+        .pay-btn { height: 80px; font-weight: 800; font-size: 1.2rem; border-radius: 15px; border: none; transition: 0.2s; }
+        .pay-btn:active { transform: scale(0.95); }
     </style>
 </head>
 <body onclick="cerrarBuscador()">
@@ -28,7 +41,7 @@
 <!-- LOGIN -->
 <div id="login-screen" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--g-dark);">
     <div class="bg-white p-5 rounded-4 shadow-lg text-center" style="width: 420px;">
-        <h3 class="fw-bold text-danger mb-4">GUERRERO ERP v2.8.6</h3>
+        <h3 class="fw-bold text-danger mb-4">GUERRERO ERP v2.8.7</h3>
         <select id="select-caja" class="form-select mb-3 fw-bold border-danger">
             <option>Caja 1 - Mañana</option><option>Caja 1 - Tarde</option>
             <option>Caja 2 - Mañana</option><option>Caja 2 - Tarde</option>
@@ -37,46 +50,46 @@
         </select>
         <input type="text" id="u" class="form-control mb-2 py-2" placeholder="Usuario">
         <input type="password" id="p" class="form-control mb-4 py-2" placeholder="Contraseña">
-        <button class="btn btn-danger w-100 fw-bold py-3 shadow" onclick="login()">INGRESAR</button>
+        <button class="btn btn-danger w-100 fw-bold py-3 shadow" onclick="login()">INGRESAR AL SISTEMA</button>
     </div>
 </div>
 
-<!-- APP -->
+<!-- APLICACIÓN -->
 <div id="main-app" style="display: none;">
-    <div class="sidebar">
+    <div class="sidebar shadow">
         <div class="p-4 border-bottom border-secondary mb-3 text-white text-center">
             <h5 class="fw-bold">GUERRERO ERP</h5>
-            <small id="info-u" class="text-secondary">---</small>
+            <small id="info-u" class="text-secondary small">Cajero: ---</small>
         </div>
         <div class="nav flex-column">
             <div class="nav-link active" id="link-pos" onclick="setVista('POS')">📦 Ventas / Compras</div>
             <div class="nav-link" id="link-caja" onclick="setVista('CAJA')">💵 Movimientos de Caja</div>
-            <div class="nav-link" id="link-cli" onclick="setVista('CLIENTES')">👤 Clientes</div>
-            <div class="nav-link text-info mt-5" onclick="enviarCierre()">📧 Cierre Gmail</div>
-            <div class="nav-link text-warning mt-2" onclick="location.reload()">🔒 Salir</div>
+            <div class="nav-link" id="link-cli" onclick="setVista('CLIENTES')">👤 Gestión de Clientes</div>
+            <div class="nav-link text-info mt-5" onclick="enviarCierre()">📧 Enviar Cierre Gmail</div>
+            <div class="nav-link text-warning mt-2" onclick="location.reload()">🔒 Cerrar Sesión</div>
         </div>
     </div>
 
     <main>
         <div id="view-pos">
             <div id="tabs-header" class="tabs-bar"></div>
-            <div class="workspace">
+            <div class="workspace shadow-sm">
                 <div class="row">
                     <div class="col-md-9" onclick="event.stopPropagation()">
                         <div class="position-relative mb-3">
-                            <input type="text" id="buscador" class="form-control form-control-lg border-danger" 
+                            <input type="text" id="buscador" class="form-control form-control-lg border-danger shadow-sm" 
                                    placeholder="🔍 Código (Enter) o Nombre..." oninput="buscar(this.value)"
                                    onkeypress="if(event.key==='Enter'){event.preventDefault(); buscar(this.value, true);}">
                             <div id="results"></div>
                         </div>
                         <div id="lista-items"></div>
                     </div>
-                    <div class="col-md-3 text-center border-start">
-                        <p class="small fw-bold text-secondary">TOTAL REDONDEADO</p>
-                        <h1 class="fw-bold text-danger mb-4">$<span id="total-val">0</span></h1>
-                        <button class="btn btn-danger btn-lg w-100 py-4 fw-bold shadow mb-3" onclick="abrirPagos()">COBRAR (F8)</button>
-                        <button class="btn btn-sm btn-outline-dark w-100 mb-2" onclick="nuevaRemision('SALIDA')">+ VENTA</button>
-                        <button class="btn btn-sm btn-outline-dark w-100" onclick="nuevaRemision('ENTRADA')">+ COMPRA</button>
+                    <div class="col-md-3 text-center border-start ps-4">
+                        <p class="small fw-bold text-secondary mb-1">TOTAL REDONDEADO</p>
+                        <h1 class="fw-bold text-danger mb-4" style="font-size: 3rem;">$<span id="total-val">0</span></h1>
+                        <button class="btn btn-danger btn-lg w-100 py-4 fw-bold shadow-sm mb-3" onclick="abrirPagos()">COBRAR (F8)</button>
+                        <button class="btn btn-sm btn-outline-dark w-100 mb-2" onclick="nuevaRemision('SALIDA')">+ NUEVA VENTA</button>
+                        <button class="btn btn-sm btn-outline-dark w-100" onclick="nuevaRemision('ENTRADA')">+ NUEVA COMPRA</button>
                     </div>
                 </div>
             </div>
@@ -86,7 +99,7 @@
         <div id="modal-pagos" class="modal fade" data-bs-backdrop="static" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content p-4 border-0 shadow-lg" style="border-radius: 25px;">
-                    <h4 class="text-center fw-bold mb-4 text-danger">Medio de Pago</h4>
+                    <h4 class="text-center fw-bold mb-4 text-danger">Seleccione Medio de Pago</h4>
                     <div class="row g-3">
                         <div class="col-6"><button class="btn btn-success w-100 pay-btn" onclick="finalizar('EFECTIVO')">💵 EFECTIVO</button></div>
                         <div class="col-6"><button class="btn btn-info w-100 pay-btn text-white" onclick="finalizar('NEQUI')">🟣 NEQUI</button></div>
@@ -98,29 +111,29 @@
             </div>
         </div>
 
-        <!-- MOVIMIENTOS CAJA TOTAL -->
-        <div id="view-caja" style="display:none;" class="workspace">
-            <h4 class="fw-bold mb-4 border-bottom pb-2">Cuadre de Turno Completo</h4>
+        <!-- MOVIMIENTOS CAJA -->
+        <div id="view-caja" style="display:none;" class="workspace shadow-sm">
+            <h4 class="fw-bold mb-4 border-bottom pb-2 text-danger">Registro Completo de Movimientos de Caja</h4>
             <div class="row g-3">
-                <div class="col-md-4"><label class="small fw-bold">Base Inicial $</label><input type="number" id="base_inicial" class="form-control"></div>
+                <div class="col-md-4"><label class="small fw-bold">Base Inicial $</label><input type="number" id="base_inicial" class="form-control border-danger"></div>
                 <div class="col-md-4"><label class="small fw-bold">Préstamo Sarah $</label><input type="number" id="prestamo_sarah" class="form-control" value="0"></div>
                 <div class="col-md-4"><label class="small fw-bold">Retiro Sarah $</label><input type="number" id="retiro_sarah" class="form-control" value="0"></div>
-                <div class="col-md-3"><label class="small fw-bold text-info">Venta Nequi $</label><input type="number" id="venta_nequi" class="form-control" value="0"></div>
-                <div class="col-md-3"><label class="small fw-bold text-info">Venta Transfiya $</label><input type="number" id="venta_transfiya" class="form-control" value="0"></div>
-                <div class="col-md-3"><label class="small fw-bold text-info">Venta Datáfono $</label><input type="number" id="venta_datafono" class="form-control" value="0"></div>
-                <div class="col-md-3"><label class="small fw-bold text-success">Base Final Arqueo $</label><input type="number" id="base_final" class="form-control"></div>
-                <div class="col-12 mt-4"><button class="btn btn-danger btn-lg w-100 fw-bold" onclick="guardarMovCaja()">CERRAR TURNO Y GUARDAR</button></div>
+                <div class="col-md-4"><label class="small fw-bold text-info">Venta Nequi $</label><input type="number" id="venta_nequi" class="form-control" value="0"></div>
+                <div class="col-md-4"><label class="small fw-bold text-info">Venta Transfiya $</label><input type="number" id="venta_transfiya" class="form-control" value="0"></div>
+                <div class="col-md-4"><label class="small fw-bold text-info">Venta Datáfono $</label><input type="number" id="venta_datafono" class="form-control" value="0"></div>
+                <div class="col-md-12"><label class="small fw-bold text-success">Base Final Arqueo $</label><input type="number" id="base_final" class="form-control border-success"></div>
+                <div class="col-12 mt-4"><button class="btn btn-danger btn-lg w-100 fw-bold py-3 shadow" onclick="guardarMovCaja()">GUARDAR Y CERRAR TURNO</button></div>
             </div>
         </div>
 
         <!-- CLIENTES -->
-        <div id="view-clientes" style="display:none;" class="workspace">
-            <div class="d-flex justify-content-between mb-4 border-bottom pb-2">
-                <h4 class="fw-bold">Gestión de Clientes</h4>
-                <button class="btn btn-danger" onclick="crearCliente()">+ Nuevo Cliente</button>
+        <div id="view-clientes" style="display:none;" class="workspace shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                <h4 class="fw-bold text-danger">Gestión de Clientes con Email</h4>
+                <button class="btn btn-danger fw-bold" onclick="crearCliente()">+ Agregar Nuevo Cliente</button>
             </div>
             <table class="table table-hover border">
-                <thead class="table-dark"><tr><th>Documento</th><th>Nombre</th><th>Teléfono</th><th>Email</th></tr></thead>
+                <thead class="table-dark"><tr><th>Documento</th><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Dirección</th></tr></thead>
                 <tbody id="cli-tabla"></tbody>
             </table>
         </div>
@@ -144,7 +157,7 @@
             document.getElementById('main-app').style.display = 'flex';
             document.getElementById('info-u').innerText = "Cajero: " + uActivo;
             nuevaRemision('SALIDA');
-        } else alert("Datos Incorrectos");
+        } else alert("Error de Acceso");
     }
 
     function nuevaRemision(tipo) {
@@ -164,7 +177,7 @@
     function renderTabs() {
         document.getElementById('tabs-header').innerHTML = docs.map(d => `
             <div class="tab-item ${d.id === activeId ? 'active' : ''}" onclick="activarTab(${d.id})">
-                ${d.tipo === 'SALIDA' ? 'Venta' : 'Compra'} <span onclick="cerrarTab(${d.id}, event)">✕</span>
+                ${d.tipo === 'SALIDA' ? 'Venta' : 'Compra'} <span class="tab-close" onclick="cerrarTab(${d.id}, event)">✕</span>
             </div>`).join('');
     }
 
@@ -174,8 +187,9 @@
         const r = await fetch(`${VAULT.U}/rest/v1/productos?or=(descripcion.ilike.*${v}*,codigo.eq.${v})&limit=10`, { headers });
         const d = await r.json();
         
-        if((exact || d.length === 1 && d[0].codigo == v) && d.length > 0) {
-            add(d[0]); document.getElementById('buscador').value = '';
+        if((exact || d.length === 1 && d.codigo == v) && d.length > 0) {
+            const item = d.find(i => i.codigo == v) || d[0];
+            add(item); document.getElementById('buscador').value = '';
             resDiv.style.display = 'none';
         } else {
             resDiv.innerHTML = d.map(x => `<div class="res-item" onclick="add(${JSON.stringify(x).replace(/"/g, '&quot;')})"><span>${x.descripcion}</span><b>$${parseInt(x.precio_1)}</b></div>`).join('');
@@ -203,8 +217,8 @@
                 <span class="small text-muted">${x.codigo}</span><span class="fw-bold">${x.descripcion}</span>
                 <input type="number" class="form-control form-control-sm" value="${x.precio_1}" onchange="actualizarItem(${i}, 'precio_1', this.value)">
                 <input type="number" class="form-control form-control-sm" step="0.001" value="${x.qty}" onchange="actualizarItem(${i}, 'qty', this.value)">
-                <span class="text-end fw-bold">$${sub.toLocaleString()}</span>
-                <button class="btn btn-sm text-danger" onclick="doc.cart.splice(${i},1);renderCart()">✕</button>
+                <span class="text-end fw-bold text-danger">$${sub.toLocaleString()}</span>
+                <button class="btn btn-sm text-danger" onclick="docs.find(d=>d.id==${activeId}).cart.splice(${i},1);renderCart()">✕</button>
             </div>`;
         }).join('');
         document.getElementById('total-val').innerText = Math.round(t).toLocaleString();
@@ -223,10 +237,10 @@
         });
         if(res.ok) {
             bootstrap.Modal.getInstance(document.getElementById('modal-pagos')).hide();
-            alert("✅ Procesado (" + metodo + ")");
+            alert("✅ Procesado Correctamente (" + metodo + ")");
             docs = docs.filter(d => d.id !== activeId);
             if(docs.length === 0) nuevaRemision('SALIDA'); else activarTab(docs[docs.length-1].id);
-        } else alert("Error de red");
+        } else alert("Error de red al procesar");
     }
 
     async function guardarMovCaja() {
@@ -242,25 +256,28 @@
             estado_turno: 'ABIERTO'
         };
         await fetch(`${VAULT.U}/rest/v1/movimientos_caja`, { method:'POST', headers, body: JSON.stringify(data)});
-        alert("📊 Cuadre Guardado");
+        alert("📊 Cuadre de Turno Guardado");
     }
 
     function setVista(v) {
         document.getElementById('view-pos').style.display = v === 'POS' ? 'block' : 'none';
         document.getElementById('view-caja').style.display = v === 'CAJA' ? 'block' : 'none';
         document.getElementById('view-clientes').style.display = v === 'CLIENTES' ? 'block' : 'none';
-        if(v === 'CLIENTES') cargarClientes();
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        if(v === 'CLIENTES') { cargarClientes(); document.getElementById('link-cli').classList.add('active'); }
+        if(v === 'CAJA') document.getElementById('link-caja').classList.add('active');
+        if(v === 'POS') document.getElementById('link-pos').classList.add('active');
     }
 
     async function cargarClientes() {
         const r = await fetch(`${VAULT.U}/rest/v1/terceros?select=*`, { headers });
         const d = await r.json();
-        document.getElementById('cli-tabla').innerHTML = d.map(c => `<tr><td>${c.documento}</td><td>${c.nombre}</td><td>${c.telefono}</td><td>${c.email || '-'}</td></tr>`).join('');
+        document.getElementById('cli-tabla').innerHTML = d.map(c => `<tr><td>${c.documento}</td><td>${c.nombre}</td><td>${c.telefono}</td><td>${c.email || '-'}</td><td>${c.direccion || '-'}</td></tr>`).join('');
     }
 
     function crearCliente() {
-        const d = prompt("Documento:"), n = prompt("Nombre:"), t = prompt("Tel:"), e = prompt("Email:");
-        if(d && n) fetch(`${VAULT.U}/rest/v1/terceros`, { method:'POST', headers, body: JSON.stringify({documento:d, nombre:n, telefono:t, email:e})}).then(cargarClientes);
+        const d = prompt("Documento:"), n = prompt("Nombre:"), t = prompt("Tel:"), e = prompt("Email:"), di = prompt("Dir:");
+        if(d && n) fetch(`${VAULT.U}/rest/v1/terceros`, { method:'POST', headers, body: JSON.stringify({documento:d, nombre:n, telefono:t, email:e, direccion:di})}).then(cargarClientes);
     }
 
     function enviarCierre() { window.open(`mailto:sarita.6421@://gmail.com de cierre diario.`); }
