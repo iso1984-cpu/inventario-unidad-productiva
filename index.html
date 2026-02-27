@@ -2,79 +2,142 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>GUERRERO ERP v2.8.0</title>
+    <title>GUERRERO ERP v2.8.0 - Sistema Integrado</title>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <style>
-        :root { --g-red: #e31e24; --g-dark: #1a1a1a; }
-        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        :root { --g-red: #e31e24; --g-dark: #1a1a1a; --g-gray: #f8f9fa; }
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
+        
+        /* LOGIN */
         #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--g-dark); }
         .login-card { background: white; padding: 40px; border-radius: 20px; width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+
+        /* ESTRUCTURA */
         #main-app { display: none; min-height: 100vh; }
-        .sidebar { width: 260px; background: var(--g-dark); color: white; position: fixed; height: 100vh; z-index: 1000; }
-        .nav-link { color: #adb5bd; padding: 15px 25px; cursor: pointer; border-left: 4px solid transparent; }
+        .sidebar { width: 260px; background: var(--g-dark); color: white; position: fixed; height: 100vh; z-index: 1000; transition: 0.3s; }
+        .nav-link { color: #adb5bd; padding: 12px 25px; cursor: pointer; border-left: 4px solid transparent; text-decoration: none; display: block; font-size: 0.9rem; }
         .nav-link:hover, .nav-link.active { background: #2a2a2a; color: white !important; border-left-color: var(--g-red); }
-        main { margin-left: 260px; flex-grow: 1; padding: 30px; }
-        .workspace { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); min-height: 80vh; }
+        main { margin-left: 260px; flex-grow: 1; padding: 25px; width: calc(100% - 260px); }
+
+        /* COMPONENTES */
+        .workspace { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); min-height: 80vh; }
         .search-box { position: relative; width: 100%; margin-bottom: 20px; }
-        #results { position: absolute; width: 100%; z-index: 2000; background: white; border: 1px solid #ddd; max-height: 300px; overflow-y: auto; }
-        .res-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        .item-row { display: grid; grid-template-columns: 3fr 1fr 1fr 1fr 50px; gap: 10px; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .total-box { border-left: 5px solid var(--g-red); background: #fff; padding: 20px; border-radius: 10px; }
+        #results { position: absolute; width: 100%; z-index: 2000; background: white; border: 1px solid #ddd; max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; }
+        .res-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .res-item:hover { background: var(--g-gray); }
+
+        .item-row { display: grid; grid-template-columns: 3fr 1fr 1fr 1fr 40px; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        .total-box { border-left: 5px solid var(--g-red); background: #fff; padding: 20px; border-radius: 10px; position: sticky; top: 20px; }
+        
+        .badge-stock { font-size: 0.7rem; padding: 3px 7px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
+<!-- PANTALLA LOGIN -->
 <div id="login-screen">
     <div class="login-card">
         <h3 class="fw-bold text-center mb-1">GUERRERO <span class="text-danger">ERP</span></h3>
-        <p class="text-center text-muted small mb-4 font-monospace">v2.8.0 | ACCESO</p>
-        <label class="small fw-bold text-danger mb-1">PUNTO DE VENTA Y TURNO:</label>
-        <select id="select-caja" class="form-select mb-4">
+        <p class="text-center text-muted small mb-4 font-monospace">v2.8.0 | ACCESO SEGURO</p>
+        <label class="small fw-bold text-danger mb-1">PUNTO DE VENTA / CAJA:</label>
+        <select id="select-caja" class="form-select mb-4 fw-bold">
             <option>Caja 1 - Mañana</option><option>Caja 1 - Tarde</option>
             <option>Caja 2 - Mañana</option><option>Caja 2 - Tarde</option>
         </select>
-        <input type="text" id="user-email" class="form-control mb-2" placeholder="Usuario">
-        <input type="password" id="user-pass" class="form-control mb-4" placeholder="Contraseña">
-        <button class="btn btn-danger w-100 fw-bold py-3" onclick="login()">INGRESAR</button>
+        <input type="text" id="user-email" class="form-control mb-2 py-2" placeholder="Usuario">
+        <input type="password" id="user-pass" class="form-control mb-4 py-2" placeholder="Contraseña">
+        <button class="btn btn-danger w-100 fw-bold py-3 shadow" onclick="login()">INGRESAR AL SISTEMA</button>
     </div>
 </div>
 
+<!-- APP PRINCIPAL -->
 <div id="main-app">
     <div class="sidebar">
         <div class="p-4 border-bottom border-secondary mb-3">
-            <h4 class="fw-bold text-white mb-0">GUERRERO ERP</h4>
-            <small id="info-usuario" class="text-secondary small">Cajero: ---</small>
+            <h5 class="fw-bold text-white mb-0">GUERRERO ERP</h5>
+            <small id="info-usuario" class="text-secondary">Cajero: ---</small>
         </div>
         <div class="nav flex-column">
-            <div class="nav-link active" onclick="cambiarModulo('SALIDA')">📦 Remisión de Salida</div>
-            <div class="nav-link" onclick="cambiarModulo('ENTRADA')">📥 Remisión de Entrada</div>
-            <div class="nav-link text-warning mt-4" onclick="location.reload()">🔒 Cerrar Sesión</div>
+            <small class="px-4 text-uppercase text-secondary" style="font-size: 0.7rem;">Operaciones</small>
+            <div class="nav-link active" onclick="cambiarModulo('SALIDA', this)">📦 Remisión de Salida</div>
+            <div class="nav-link" onclick="cambiarModulo('ENTRADA', this)">📥 Remisión de Entrada</div>
+            
+            <small class="px-4 text-uppercase text-secondary mt-3" style="font-size: 0.7rem;">Gestión</small>
+            <div class="nav-link" onclick="cambiarModulo('CLIENTES', this)">👤 Clientes / Terceros</div>
+            <div class="nav-link" onclick="cambiarModulo('CAJA', this)">💵 Movimientos de Caja</div>
+            
+            <div class="nav-link text-warning mt-5" onclick="location.reload()">🔒 Cerrar Sesión</div>
         </div>
     </div>
+
     <main>
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 id="modulo-title" class="fw-bold">Remisión de Salida</h2>
-            <div id="reloj" class="h4 font-monospace text-danger bg-white p-2 rounded shadow-sm">00:00:00</div>
+            <div>
+                <h2 id="modulo-title" class="fw-bold mb-0">Remisión de Salida</h2>
+                <small id="modulo-desc" class="text-muted">Gestión de ventas y facturación rápida</small>
+            </div>
+            <div id="reloj" class="h4 font-monospace text-danger bg-white px-3 py-2 rounded shadow-sm border">00:00:00</div>
         </div>
-        <div class="row">
-            <div class="col-md-9">
-                <div class="workspace">
-                    <div class="search-box">
-                        <input type="text" id="buscador" class="form-control form-control-lg border-danger" placeholder="🔍 Buscar producto..." oninput="buscarConDelay(this.value)">
-                        <div id="results" style="display:none;"></div>
+
+        <div id="contenedor-dinamico">
+            <!-- VISTA DE VENTAS (DEFAULT) -->
+            <div id="view-pos" class="row">
+                <div class="col-md-9">
+                    <div class="workspace">
+                        <div class="search-box">
+                            <input type="text" id="buscador" class="form-control form-control-lg border-danger shadow-sm" 
+                                   placeholder="🔍 Escanee código de barras o busque nombre..." 
+                                   oninput="buscarConDelay(this.value)"
+                                   onkeypress="if(event.key === 'Enter') { event.preventDefault(); buscar(this.value, true); }">
+                            <div id="results" style="display:none;"></div>
+                        </div>
+                        <div class="item-row bg-light text-muted small fw-bold rounded">
+                            <span>PRODUCTO / DESCRIPCIÓN</span><span>PRECIO</span><span>CANT</span><span class="text-end">TOTAL</span><span></span>
+                        </div>
+                        <div id="lista-remision" class="mt-2"></div>
                     </div>
-                    <div class="item-row bg-light text-muted small fw-bold">
-                        <span>PRODUCTO</span><span>PRECIO</span><span>CANT</span><span class="text-end">TOTAL</span><span></span>
+                </div>
+                <div class="col-md-3">
+                    <div class="total-box shadow-sm border">
+                        <label class="text-secondary small fw-bold">TOTAL A COBRAR</label>
+                        <h1 class="fw-bold text-danger my-2">$<span id="total-val">0</span></h1>
+                        <hr>
+                        <button class="btn btn-danger btn-lg w-100 py-3 fw-bold mb-2 shadow" onclick="finalizarVenta()">COBRAR (F8)</button>
+                        <button class="btn btn-outline-secondary w-100" onclick="if(confirm('¿Vaciar carrito?')){cart=[];render();}">CANCELAR</button>
                     </div>
-                    <div id="lista-remision"></div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="total-box text-center">
-                    <span class="text-secondary small fw-bold">TOTAL</span>
-                    <h1 class="fw-bold text-danger my-3">$<span id="total-val">0</span></h1>
-                    <button class="btn btn-danger btn-lg w-100 py-3 fw-bold mb-2" onclick="finalizar()">COBRAR</button>
-                    <button class="btn btn-outline-secondary w-100" onclick="cart=[];render()">CANCELAR</button>
+
+            <!-- VISTA DE CLIENTES -->
+            <div id="view-clientes" style="display:none;" class="workspace">
+                <div class="d-flex justify-content-between mb-4">
+                    <h4>Registro de Clientes</h4>
+                    <button class="btn btn-danger" onclick="abrirModalCliente()">+ Nuevo Cliente</button>
+                </div>
+                <table class="table table-hover">
+                    <thead><tr><th>Documento</th><th>Nombre</th><th>Teléfono</th><th>Dirección</th></tr></thead>
+                    <tbody id="tabla-clientes"></tbody>
+                </table>
+            </div>
+
+            <!-- VISTA DE CAJA -->
+            <div id="view-caja" style="display:none;" class="workspace">
+                <h4>Movimientos de Efectivo</h4>
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card p-4 border-success">
+                            <h6>Ingreso de Base / Otros</h6>
+                            <input type="number" id="caja-ingreso" class="form-control mb-2" placeholder="Monto $">
+                            <button class="btn btn-success w-100" onclick="registrarCaja('INGRESO')">Registrar Ingreso</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card p-4 border-danger">
+                            <h6>Gasto / Egreso de Caja</h6>
+                            <input type="number" id="caja-egreso" class="form-control mb-2" placeholder="Monto $">
+                            <button class="btn btn-danger w-100" onclick="registrarCaja('EGRESO')">Registrar Gasto</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -84,8 +147,11 @@
 <script>
     const VAULT = { U: "https://tzseklsayxaldtqatwuq.supabase.co", K: "sb_publishable_qDqumbtdB4vA3btU7USJsQ_kay6Rrh5" };
     const headers = { 'apikey': VAULT.K, 'Authorization': `Bearer ${VAULT.K}`, 'Content-Type': 'application/json' };
+    
     let cart = [], modulo = 'SALIDA', cajaActual = '', usuarioActivo = '', searchTimeout = null;
+    const beep = new Audio('https://www.soundjay.com');
 
+    // --- AUTENTICACIÓN ---
     async function login() {
         const u = document.getElementById('user-email').value.trim();
         const p = document.getElementById('user-pass').value.trim();
@@ -97,59 +163,127 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'flex';
             document.getElementById('info-usuario').innerText = "Cajero: " + usuarioActivo;
-        } else alert("Error de acceso");
+        } else { alert("Usuario o contraseña incorrectos"); }
     }
 
+    // --- BUSCADOR Y LECTOR ---
     function buscarConDelay(v) {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => buscar(v), 300);
     }
 
-    async function buscar(v) {
+    async function buscar(v, isExact = false) {
         const resDiv = document.getElementById('results');
         if(v.length < 2) { resDiv.style.display='none'; return; }
-        const r = await fetch(`${VAULT.U}/rest/v1/productos?or=(nombre.ilike.*${v}*,ean.eq.${v})&select=*`, { headers });
+        
+        // Búsqueda usando columna 'codigo' según captura de Supabase
+        const r = await fetch(`${VAULT.U}/rest/v1/productos?or=(descripcion.ilike.*${v}*,codigo.eq.${v})&limit=10`, { headers });
         const d = await r.json();
-        resDiv.innerHTML = d.map(x => `<div class="res-item" onclick='add(${JSON.stringify(x)})'><span>${x.nombre}</span><b class="text-danger">$${x.precio1}</b></div>`).join('');
-        resDiv.style.display='block';
+
+        if (isExact && d.length > 0) {
+            const match = d.find(p => p.codigo == v) || d[0];
+            add(match);
+            return;
+        }
+
+        resDiv.innerHTML = d.map(x => `
+            <div class="res-item" onclick='add(${JSON.stringify(x)})'>
+                <span><b>${x.descripcion}</b> <br><small class="text-muted">${x.codigo}</small></span>
+                <div class="text-end">
+                    <span class="badge bg-secondary badge-stock">Stock: ${x.stock || 0}</span><br>
+                    <span class="text-danger fw-bold">$${parseInt(x.precio1 || 0).toLocaleString()}</span>
+                </div>
+            </div>`).join('');
+        resDiv.style.display = d.length > 0 ? 'block' : 'none';
     }
 
     function add(x) {
-        const exist = cart.find(i => i.id === x.id);
-        exist ? exist.qty++ : cart.push({...x, qty: 1});
+        beep.play();
+        const exist = cart.find(i => i.codigo === x.codigo);
+        if(exist) { exist.qty++; } else { cart.push({...x, qty: 1}); }
         document.getElementById('results').style.display='none';
         document.getElementById('buscador').value = '';
+        document.getElementById('buscador').focus();
         render();
     }
 
     function render() {
         let t = 0;
         document.getElementById('lista-remision').innerHTML = cart.map((x, i) => {
-            const sub = x.precio1 * x.qty; t += sub;
+            const sub = (x.precio1 || 0) * x.qty; t += sub;
             return `<div class="item-row">
-                <span class="small fw-bold">${x.nombre}</span>
+                <span class="small fw-bold">${x.descripcion}</span>
                 <input type="number" class="form-control form-control-sm" value="${x.precio1}" onchange="cart[${i}].precio1=this.value;render()">
                 <input type="number" class="form-control form-control-sm" value="${x.qty}" onchange="cart[${i}].qty=this.value;render()">
-                <span class="text-end text-danger fw-bold">$${sub.toLocaleString('es-CO')}</span>
-                <button class="btn btn-sm text-danger" onclick="cart.splice(${i},1);render()">×</button>
+                <span class="text-end text-danger fw-bold">$${sub.toLocaleString()}</span>
+                <button class="btn btn-sm text-danger" onclick="cart.splice(${i},1);render()">✕</button>
             </div>`;
         }).join('');
-        document.getElementById('total-val').innerText = t.toLocaleString('es-CO');
+        document.getElementById('total-val').innerText = t.toLocaleString();
     }
 
-    async function finalizar() {
-        if(!cart.length) return;
+    // --- PROCESAR VENTA (RPC) ---
+    async function finalizarVenta() {
+        if(!cart.length) return alert("No hay productos");
         try {
             const res = await fetch(`${VAULT.U}/rest/v1/rpc/procesar_venta`, {
                 method: 'POST', headers,
-                body: JSON.stringify({ items: cart, p_terminal: cajaActual, p_usuario: usuarioActivo, p_tipo_movimiento: modulo })
+                body: JSON.stringify({ 
+                    items: cart, p_terminal: cajaActual, p_usuario: usuarioActivo, p_tipo_movimiento: modulo 
+                })
             });
             if (!res.ok) throw new Error(await res.text());
-            alert("✅ Éxito"); cart = []; render();
+            alert("✅ Movimiento guardado y stock actualizado");
+            cart = []; render();
         } catch (e) { alert("Error: " + e.message); }
     }
 
-    function cambiarModulo(m) { modulo = m; document.getElementById('modulo-title').innerText = `Remisión de ${m}`; cart = []; render(); }
+    // --- GESTIÓN DE CLIENTES ---
+    async function cargarClientes() {
+        const res = await fetch(`${VAULT.U}/rest/v1/terceros?select=*`, { headers });
+        const data = await res.json();
+        document.getElementById('tabla-clientes').innerHTML = data.map(c => `
+            <tr><td>${c.documento}</td><td>${c.nombre}</td><td>${c.telefono}</td><td>${c.direccion || '-'}</td></tr>
+        `).join('');
+    }
+
+    // --- GESTIÓN DE CAJA ---
+    async function registrarCaja(tipo) {
+        const monto = document.getElementById(tipo === 'INGRESO' ? 'caja-ingreso' : 'caja-egreso').value;
+        if(!monto) return;
+        const conc = prompt("Concepto del movimiento:");
+        await fetch(`${VAULT.U}/rest/v1/movimientos_caja`, {
+            method: 'POST', headers,
+            body: JSON.stringify({ tipo, monto, concepto: conc, usuario: usuarioActivo, terminal: cajaActual })
+        });
+        alert("Caja actualizada");
+        document.getElementById('caja-ingreso').value = ''; document.getElementById('caja-egreso').value = '';
+    }
+
+    // --- NAVEGACIÓN ---
+    function cambiarModulo(m, el) {
+        modulo = m;
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        el.classList.add('active');
+        
+        // Ocultar todas las vistas
+        document.getElementById('view-pos').style.display = 'none';
+        document.getElementById('view-clientes').style.display = 'none';
+        document.getElementById('view-caja').style.display = 'none';
+
+        if (m === 'SALIDA' || m === 'ENTRADA') {
+            document.getElementById('view-pos').style.display = 'flex';
+            document.getElementById('modulo-title').innerText = `Remisión de ${m}`;
+        } else if (m === 'CLIENTES') {
+            document.getElementById('view-clientes').style.display = 'block';
+            document.getElementById('modulo-title').innerText = "Gestión de Terceros";
+            cargarClientes();
+        } else if (m === 'CAJA') {
+            document.getElementById('view-caja').style.display = 'block';
+            document.getElementById('modulo-title').innerText = "Caja Diaria";
+        }
+    }
+
     setInterval(() => { document.getElementById('reloj').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
