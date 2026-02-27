@@ -223,20 +223,60 @@
     }
 
     // --- PROCESAR VENTA (RPC) ---
-    async function finalizarVenta() {
-        if(!cart.length) return alert("No hay productos");
-        try {
-            const res = await fetch(`${VAULT.U}/rest/v1/rpc/procesar_venta`, {
-                method: 'POST', headers,
-                body: JSON.stringify({ 
-                    items: cart, p_terminal: cajaActual, p_usuario: usuarioActivo, p_tipo_movimiento: modulo 
-                })
-            });
-            if (!res.ok) throw new Error(await res.text());
-            alert("✅ Movimiento guardado y stock actualizado");
-            cart = []; render();
-        } catch (e) { alert("Error: " + e.message); }
+
+     window.addEventListener('keydown', (e) => {
+    if (e.key === 'F8') {
+        e.preventDefault();
+        finalizarVenta();
     }
+          });
+
+    async function finalizarVenta() {
+    if(!cart.length) return alert("⚠️ El carrito está vacío");
+
+    // 1. Calculamos el total actual
+    const totalVenta = cart.reduce((acc, item) => acc + (parseFloat(item.precio_1) * item.qty), 0);
+    
+    // 2. Preguntamos el método de pago
+    const metodo = confirm("¿El pago es en EFECTIVO?\n(Aceptar = Efectivo / Cancelar = Transferencia/Nequi)");
+    const metodoTexto = metodo ? "EFECTIVO" : "TRANSFERENCIA";
+
+    // 3. Si es efectivo, calculamos el cambio (vueltas)
+    let cambio = 0;
+    if(metodo) {
+        const pagoCon = prompt(`TOTAL: $${totalVenta.toLocaleString()}\n¿Con cuánto paga el cliente?`, totalVenta);
+        if(pagoCon === null) return; // Cancela el proceso
+        
+        cambio = parseFloat(pagoCon) - totalVenta;
+        if(cambio < 0) return alert("❌ El dinero es insuficiente");
+        alert(`💵 CAMBIO PARA EL CLIENTE: $${cambio.toLocaleString()}`);
+    }
+
+    // 4. Procesamos en la base de datos (RPC)
+    try {
+        const res = await fetch(`${VAULT.U}/rest/v1/rpc/procesar_venta`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ 
+                items: cart, 
+                p_terminal: cajaActual, 
+                p_usuario: usuarioActivo, 
+                p_tipo_movimiento: modulo,
+                p_metodo_pago: metodoTexto // Enviamos el método de pago al servidor
+            })
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+
+        alert(`✅ VENTA EXITOSA (${metodoTexto})\nTotal: $${totalVenta.toLocaleString()}`);
+        cart = []; 
+        render();
+        document.getElementById('buscador').focus();
+    } catch (e) { 
+        alert("❌ Error en el servidor: " + e.message); 
+    }
+}
+    
 
     // --- GESTIÓN DE CLIENTES ---
     async function cargarClientes() {
